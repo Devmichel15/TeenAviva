@@ -7,7 +7,7 @@ export default function Splash() {
       <Text style={s.title}>TeenAviva</Text>
       <TouchableOpacity
         style={s.btn}
-        onPress={() => router.replace("/(tabs)/")}
+        onPress={() => router.replace("/tabs/")}
       >
         <Text style={s.btnTxt}>Começar</Text>
       </TouchableOpacity>

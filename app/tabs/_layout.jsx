@@ -14,7 +14,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Início" }} />
-      <Tabs.Screen name="ofensiva" options={{ title: "Ofensiva" }} />
+      <Tabs.Screen name="ofensivas" options={{ title: "Ofensiva" }} />
     </Tabs>
   );
 }
