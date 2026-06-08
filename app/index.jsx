@@ -1,16 +1,16 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { router } from "expo-router";
+import {colors} from "../src/styles/colors.js"
+import { TextComp } from "../src/components/Text.jsx";
 
 export default function Splash() {
   return (
     <View style={s.container}>
-      <Text style={s.title}>TeenAviva</Text>
-      <TouchableOpacity
-        style={s.btn}
-        onPress={() => router.replace("/tabs/")}
-      >
-        <Text style={s.btnTxt}>Começar</Text>
-      </TouchableOpacity>
+      <Image
+        source={require("../public/logo.png")}
+        style={{ width: 99.5, height: 87.16, alignSelf: "center", marginTop: 100 }}
+      />
+      <TextComp weight="bold" variant="body" content="Teen Aviva"/>
     </View>
   );
 }
@@ -18,17 +18,13 @@ export default function Splash() {
 const s = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1C1410",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 32,
+    backgroundColor: colors.background,
   },
-  title: { fontSize: 36, fontWeight: "200", color: "#fff", letterSpacing: 4 },
-  btn: {
-    backgroundColor: "#A3B18A",
-    borderRadius: 28,
-    paddingVertical: 14,
-    paddingHorizontal: 48,
-  },
-  btnTxt: { fontSize: 16, fontWeight: "600", color: "#1C1410" },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.white,
+    textAlign: "center",
+  }
+  
 });
