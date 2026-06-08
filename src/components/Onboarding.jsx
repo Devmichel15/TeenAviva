@@ -11,7 +11,7 @@ export const Onboarding = () => {
       style={{ flex: 1 }}
     >
       <View style={styles.container}>
-        <View style={styles.logoContainer}[]
+        <View style={styles.logoContainer}>
           <Image
             style={styles.logo}
             source={require("../../public/logo.png")}
