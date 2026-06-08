@@ -1,6 +1,6 @@
 export const Fonts = {
   regular: "ManropeRegular",
-  medium: "ManropeLight",
+  light: "ManropeLight",
   semiBold: "ManropeSemiBold",
   bold: "ManropeBold",
 };
