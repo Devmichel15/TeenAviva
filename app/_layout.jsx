@@ -1,5 +1,6 @@
 import { Slot } from "expo-router";
 import { useFonts } from "expo-font";
+import { AuthProvider } from "../src/contexts/AuthContext";
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -11,5 +12,9 @@ export default function RootLayout() {
 
   if (!loaded) return null;
 
-  return <Slot />;
+  return (
+    <AuthProvider>
+      <Slot />
+    </AuthProvider>
+  );
 }

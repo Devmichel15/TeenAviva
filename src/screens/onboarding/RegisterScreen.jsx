@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -8,16 +9,51 @@ import {
   Text,
   View,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { FontAwesome6 } from "@expo/vector-icons";
 import OnboardingLayout from "../../components/onboarding/OnboardingLayout";
 import PrimaryButton from "../../components/onboarding/PrimaryButton";
 import SocialButton from "../../components/onboarding/SocialButton";
 import Input from "../../components/onboarding/Input";
 import { colors, spacing } from "../../constants/theme";
+import useAuth from "../../hooks/useAuth";
+import useGoogleAuth from "../../hooks/useGoogleAuth";
 
 export default function RegisterScreen() {
+  const router = useRouter();
+  const { register } = useAuth();
+  const { promptGoogleLogin, googleLoading, googleDisabled, googleError } =
+    useGoogleAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+
+  async function handleRegister() {
+    setError(null);
+    setSuccess(null);
+
+    if (!email.trim()) {
+      setError("Insere o teu email");
+      return;
+    }
+    if (!password.trim()) {
+      setError("Insere a tua password");
+      return;
+    }
+
+    setLoading(true);
+    const result = await register(email.trim(), password);
+    setLoading(false);
+
+    if (result.error) {
+      setError(result.error.message);
+    } else {
+      setSuccess("Conta criada com sucesso!");
+    }
+  }
 
   return (
     <OnboardingLayout>
@@ -45,10 +81,24 @@ export default function RegisterScreen() {
             Cria a tua conta e começa a tua jornada de fé hoje.
           </Text>
 
+          {googleError && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{googleError}</Text>
+            </View>
+          )}
+
           <View style={styles.socialRow}>
             <SocialButton
               text="Continuar com o Google"
-              icon={<FontAwesome6 name="google" size={20} color="#fff" />}
+              icon={
+                googleLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <FontAwesome6 name="google" size={20} color="#fff" />
+                )
+              }
+              onPress={promptGoogleLogin}
+              disabled={googleDisabled || googleLoading}
             />
             <SocialButton
               text="Continuar com Apple"
@@ -61,6 +111,18 @@ export default function RegisterScreen() {
             <Text style={styles.dividerText}>ou com email</Text>
             <View style={styles.divider} />
           </View>
+
+          {error && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          {success && (
+            <View style={styles.successBox}>
+              <Text style={styles.successText}>{success}</Text>
+            </View>
+          )}
 
           <View style={styles.inputs}>
             <Input
@@ -76,7 +138,10 @@ export default function RegisterScreen() {
             />
           </View>
 
-          <PrimaryButton text="Criar Conta" />
+          <PrimaryButton
+            text={loading ? "A criar conta..." : "Criar Conta"}
+            onPress={handleRegister}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </OnboardingLayout>
@@ -141,5 +206,33 @@ const styles = StyleSheet.create({
   inputs: {
     gap: 10,
     marginBottom: spacing.md,
+  },
+  errorBox: {
+    backgroundColor: "rgba(255, 80, 80, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 80, 80, 0.4)",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: spacing.md,
+  },
+  errorText: {
+    color: "#ff6b6b",
+    fontSize: 13,
+    fontFamily: "ManropeMedium",
+    textAlign: "center",
+  },
+  successBox: {
+    backgroundColor: "rgba(76, 175, 80, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(76, 175, 80, 0.4)",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: spacing.md,
+  },
+  successText: {
+    color: "#81c784",
+    fontSize: 13,
+    fontFamily: "ManropeMedium",
+    textAlign: "center",
   },
 });
