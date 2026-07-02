@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "space-between",
-    alignItems: "start",
+    alignItems: "flex-start",
     paddingTop: 100,
     paddingHorizontal: 20,
   },
