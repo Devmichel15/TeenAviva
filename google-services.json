@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1084436367346",
+    "project_id": "teenaviva-d3498",
+    "storage_bucket": "teenaviva-d3498.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1084436367346:android:772bfef58ae9db740a4d6b",
+        "android_client_info": {
+          "package_name": "Teen.Aviva"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBETZIQBkzt6uhxjgPPOWFFhczR7PDHz7o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
