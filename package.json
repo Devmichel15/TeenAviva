@@ -10,15 +10,29 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
+<<<<<<< HEAD
     "@react-navigation/bottom-tabs": "^7.18.7",
     "@react-navigation/native": "^7.3.7",
+=======
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
     "expo": "~54.0.34",
+    "expo-auth-session": "~7.0.11",
     "expo-font": "~14.0.12",
+<<<<<<< HEAD
+=======
+    "expo-linking": "~8.0.12",
+    "expo-random": "^14.0.1",
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
     "expo-router": "~6.0.24",
     "expo-status-bar": "~3.0.9",
     "expo-web-browser": "~15.0.11",
     "firebase": "^12.15.0",
+<<<<<<< HEAD
+=======
+    "jks-js": "^1.1.7",
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
     "lucide-react-native": "^1.23.0",
+    "node-forge": "^1.4.0",
     "react": "19.1.0",
     "react-dom": "^19.1.0",
     "react-native": "0.81.5",

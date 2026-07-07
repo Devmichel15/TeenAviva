@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -9,15 +10,24 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
+<<<<<<< HEAD
+=======
+import { FontAwesome6 } from "@expo/vector-icons";
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
 import OnboardingLayout from "../../components/onboarding/OnboardingLayout";
 import PrimaryButton from "../../components/onboarding/PrimaryButton";
 import Input from "../../components/onboarding/Input";
 import { colors, spacing } from "../../constants/theme";
 import useAuth from "../../hooks/useAuth";
+<<<<<<< HEAD
+=======
+import useGoogleAuth from "../../hooks/useGoogleAuth";
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { register } = useAuth();
+<<<<<<< HEAD
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -69,22 +79,51 @@ export default function RegisterScreen() {
     const validationError = validate();
     if (validationError) {
       setError(validationError);
+=======
+  const { promptGoogleLogin, googleLoading, googleDisabled, googleError } =
+    useGoogleAuth();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+
+  async function handleRegister() {
+    setError(null);
+    setSuccess(null);
+
+    if (!email.trim()) {
+      setError("Insere o teu email");
+      return;
+    }
+    if (!password.trim()) {
+      setError("Insere a tua password");
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
       return;
     }
 
     setLoading(true);
+<<<<<<< HEAD
     const result = await register({
       name: name.trim(),
       email: email.trim(),
       password,
       age: parseInt(age, 10),
     });
+=======
+    const result = await register(email.trim(), password);
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
     setLoading(false);
 
     if (result.error) {
       setError(result.error.message);
     } else {
+<<<<<<< HEAD
       router.replace("/");
+=======
+      setSuccess("Conta criada com sucesso!");
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
     }
   }
 
@@ -114,9 +153,54 @@ export default function RegisterScreen() {
             Cria a tua conta e começa a tua jornada de fé hoje.
           </Text>
 
+<<<<<<< HEAD
           {error && (
             <View style={styles.errorBox}>
               <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+=======
+          {googleError && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{googleError}</Text>
+            </View>
+          )}
+
+          <View style={styles.socialRow}>
+            <SocialButton
+              text="Continuar com o Google"
+              icon={
+                googleLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <FontAwesome6 name="google" size={20} color="#fff" />
+                )
+              }
+              onPress={promptGoogleLogin}
+              disabled={googleDisabled || googleLoading}
+            />
+            <SocialButton
+              text="Continuar com Apple"
+              icon={<FontAwesome6 name="apple" size={22} color="#fff" />}
+            />
+          </View>
+
+          <View style={styles.dividerRow}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>ou com email</Text>
+            <View style={styles.divider} />
+          </View>
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
+
+          {error && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          {success && (
+            <View style={styles.successBox}>
+              <Text style={styles.successText}>{success}</Text>
             </View>
           )}
 
@@ -157,6 +241,7 @@ export default function RegisterScreen() {
           <PrimaryButton
             text={loading ? "A criar conta..." : "Criar Conta"}
             onPress={handleRegister}
+<<<<<<< HEAD
             disabled={loading}
           />
 
@@ -166,6 +251,9 @@ export default function RegisterScreen() {
               Iniciar sessão
             </Text>
           </View>
+=======
+          />
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
         </ScrollView>
       </KeyboardAvoidingView>
     </OnboardingLayout>
@@ -222,6 +310,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: "#ff6b6b",
     fontSize: 13,
+<<<<<<< HEAD
     fontFamily: "ManropeSemiBold",
     textAlign: "center",
   },
@@ -239,5 +328,23 @@ const styles = StyleSheet.create({
     color: colors.gold,
     fontSize: 14,
     fontFamily: "ManropeSemiBold",
+=======
+    fontFamily: "ManropeMedium",
+    textAlign: "center",
+  },
+  successBox: {
+    backgroundColor: "rgba(76, 175, 80, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(76, 175, 80, 0.4)",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: spacing.md,
+  },
+  successText: {
+    color: "#81c784",
+    fontSize: 13,
+    fontFamily: "ManropeMedium",
+    textAlign: "center",
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
   },
 });

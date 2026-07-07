@@ -6,6 +6,10 @@ import {
   register as registerService,
   logout as logoutService,
   resetPassword as resetPasswordService,
+<<<<<<< HEAD
+=======
+  loginWithGoogle as loginWithGoogleService,
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
 } from "../services/auth.service";
 
 export const AuthContext = createContext(null);
@@ -27,8 +31,13 @@ export function AuthProvider({ children }) {
     return loginService(email, password);
   }
 
+<<<<<<< HEAD
   async function register(userData) {
     return registerService(userData);
+=======
+  async function register(email, password) {
+    return registerService(email, password);
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
   }
 
   async function logout() {
@@ -39,9 +48,19 @@ export function AuthProvider({ children }) {
     return resetPasswordService(email);
   }
 
+<<<<<<< HEAD
   return (
     <AuthContext.Provider
       value={{ user, loading, login, register, logout, resetPassword }}
+=======
+  async function loginWithGoogle(idToken) {
+    return loginWithGoogleService(idToken);
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, resetPassword, loginWithGoogle }}
+>>>>>>> 99b8c04df4fe5bb22abd0185030e2cd0b3a1cdc1
     >
       {children}
     </AuthContext.Provider>
