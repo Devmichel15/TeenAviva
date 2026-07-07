@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { colors } from '../../src/constants/theme';
-import TabNavigator from '../../src/navigation/TabNavigator';
+import Navbar from '../../src/components/navbar/Navbar';
 import HomeScreen from '../../src/screens/HomeScreen';
 import IAScreen from '../../src/screens/IAScreen';
 import ChamaScreen from '../../src/screens/OfensivaScreen';
@@ -49,7 +49,7 @@ export default function TabsLayout() {
       </View>
 
       {!hideTabBar && (
-        <TabNavigator activeTab={activeTab} onTabPress={handleTabPress} />
+        <Navbar activeTab={activeTab} onTabPress={handleTabPress} />
       )}
     </View>
   );
