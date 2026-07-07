@@ -1,5 +1,5 @@
 export const GUIDE_CONFIG = {
-  apiKey: '',
+  apiKey: process.env.EXPO_PUBLIC_HF_TOKEN || '',
   model: 'openai/gpt-oss-120b:groq',
   maxTokens: 1024,
   temperature: 0.7,

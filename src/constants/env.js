@@ -3,5 +3,5 @@
 // For local dev, create a .env file in the project root
 
 export const ENV = {
-  API_KEY: process.env.EXPO_PUBLIC_API_KEY || '',
+  HF_TOKEN: process.env.EXPO_PUBLIC_HF_TOKEN || '',
 };

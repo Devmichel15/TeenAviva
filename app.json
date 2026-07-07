@@ -28,7 +28,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "EXPO_PUBLIC_API_KEY": ""
+      "EXPO_PUBLIC_HF_TOKEN": "your_token_here"
     },
     "plugins": [
       "expo-font",
