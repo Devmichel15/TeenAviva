@@ -12,21 +12,21 @@ export default function StreakScreen({ onNext }) {
     <OnboardingLayout>
       <View style={styles.container}>
         <View style={styles.content}>
-          <Text style={styles.label}>Ofensivas de Leitura</Text>
+          <Text style={styles.label}>Chama da Fé</Text>
 
           <Text style={styles.title}>Lê todos{"\n"}os dias.</Text>
 
           <Text style={styles.goldText}>Não quebre.</Text>
 
           <Text style={styles.description}>
-            mantém a tua ofensiva activa e fortalece a tua fé com a leitura diária da palavra.
+            mantém a tua Chama acesa e fortalece a tua fé com a leitura diária da palavra.
           </Text>
 
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <View style={styles.fireRow}>
                 <Flame color={colors.white} size={20} />
-                <Text style={styles.cardTitle}>14 dias em ofensiva</Text>
+                <Text style={styles.cardTitle}>14 dias de Chama</Text>
               </View>
             </View>
 
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   dayText: {
     color: colors.white,
     fontSize: 13,
-    fontFamily: "ManropeMedium",
+    fontFamily: "ManropeSemiBold",
     opacity: 0.5,
   },
   dayTextActive: {

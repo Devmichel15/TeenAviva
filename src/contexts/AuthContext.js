@@ -6,7 +6,6 @@ import {
   register as registerService,
   logout as logoutService,
   resetPassword as resetPasswordService,
-  loginWithGoogle as loginWithGoogleService,
 } from "../services/auth.service";
 
 export const AuthContext = createContext(null);
@@ -28,8 +27,8 @@ export function AuthProvider({ children }) {
     return loginService(email, password);
   }
 
-  async function register(email, password) {
-    return registerService(email, password);
+  async function register(userData) {
+    return registerService(userData);
   }
 
   async function logout() {
@@ -40,13 +39,9 @@ export function AuthProvider({ children }) {
     return resetPasswordService(email);
   }
 
-  async function loginWithGoogle(idToken) {
-    return loginWithGoogleService(idToken);
-  }
-
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, logout, resetPassword, loginWithGoogle }}
+      value={{ user, loading, login, register, logout, resetPassword }}
     >
       {children}
     </AuthContext.Provider>

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -10,48 +9,82 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { FontAwesome6 } from "@expo/vector-icons";
 import OnboardingLayout from "../../components/onboarding/OnboardingLayout";
 import PrimaryButton from "../../components/onboarding/PrimaryButton";
-import SocialButton from "../../components/onboarding/SocialButton";
 import Input from "../../components/onboarding/Input";
 import { colors, spacing } from "../../constants/theme";
 import useAuth from "../../hooks/useAuth";
-import useGoogleAuth from "../../hooks/useGoogleAuth";
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { register } = useAuth();
-  const { promptGoogleLogin, googleLoading, googleDisabled, googleError } =
-    useGoogleAuth();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [age, setAge] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+
+  function validate() {
+    if (!name.trim()) {
+      return "Insere o teu nome completo";
+    }
+    if (name.trim().length < 2) {
+      return "O nome deve ter pelo menos 2 caracteres";
+    }
+    if (!email.trim()) {
+      return "Insere o teu email";
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return "Insere um email válido";
+    }
+    if (!age.trim()) {
+      return "Insere a tua idade";
+    }
+    const ageNum = parseInt(age, 10);
+    if (isNaN(ageNum) || ageNum !== parseFloat(age)) {
+      return "A idade deve ser um número inteiro";
+    }
+    if (ageNum < 13) {
+      return "Deves ter pelo menos 13 anos";
+    }
+    if (!password) {
+      return "Insere a tua palavra-passe";
+    }
+    if (password.length < 8) {
+      return "A palavra-passe deve ter pelo menos 8 caracteres";
+    }
+    if (password !== confirmPassword) {
+      return "As palavras-passe não coincidem";
+    }
+    return null;
+  }
 
   async function handleRegister() {
     setError(null);
-    setSuccess(null);
 
-    if (!email.trim()) {
-      setError("Insere o teu email");
-      return;
-    }
-    if (!password.trim()) {
-      setError("Insere a tua password");
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
     setLoading(true);
-    const result = await register(email.trim(), password);
+    const result = await register({
+      name: name.trim(),
+      email: email.trim(),
+      password,
+      age: parseInt(age, 10),
+    });
     setLoading(false);
 
     if (result.error) {
       setError(result.error.message);
     } else {
-      setSuccess("Conta criada com sucesso!");
+      router.replace("/");
     }
   }
 
@@ -81,67 +114,58 @@ export default function RegisterScreen() {
             Cria a tua conta e começa a tua jornada de fé hoje.
           </Text>
 
-          {googleError && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{googleError}</Text>
-            </View>
-          )}
-
-          <View style={styles.socialRow}>
-            <SocialButton
-              text="Continuar com o Google"
-              icon={
-                googleLoading ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <FontAwesome6 name="google" size={20} color="#fff" />
-                )
-              }
-              onPress={promptGoogleLogin}
-              disabled={googleDisabled || googleLoading}
-            />
-            <SocialButton
-              text="Continuar com Apple"
-              icon={<FontAwesome6 name="apple" size={22} color="#fff" />}
-            />
-          </View>
-
-          <View style={styles.dividerRow}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>ou com email</Text>
-            <View style={styles.divider} />
-          </View>
-
           {error && (
             <View style={styles.errorBox}>
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
 
-          {success && (
-            <View style={styles.successBox}>
-              <Text style={styles.successText}>{success}</Text>
-            </View>
-          )}
-
           <View style={styles.inputs}>
             <Input
+              placeholder="Nome completo"
+              value={name}
+              onChangeText={setName}
+            />
+            <Input
               placeholder="O teu email"
+              keyboardType="email-address"
+              autoCapitalize="none"
               value={email}
               onChangeText={setEmail}
             />
             <Input
-              placeholder="cria a tua password"
+              placeholder="Idade"
+              keyboardType="numeric"
+              maxLength={2}
+              value={age}
+              onChangeText={setAge}
+            />
+            <Input
+              placeholder="Cria a tua palavra-passe"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
+            />
+            <Input
+              placeholder="Confirma a tua palavra-passe"
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
             />
           </View>
 
           <PrimaryButton
             text={loading ? "A criar conta..." : "Criar Conta"}
             onPress={handleRegister}
+            disabled={loading}
           />
+
+          <View style={styles.loginRow}>
+            <Text style={styles.loginText}>Já tens conta? </Text>
+            <Text style={styles.loginLink} onPress={() => router.push("/login")}>
+              Iniciar sessão
+            </Text>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </OnboardingLayout>
@@ -183,26 +207,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginBottom: spacing.lg,
   },
-  socialRow: {
-    gap: 10,
-    marginBottom: spacing.lg,
-  },
-  dividerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: spacing.lg,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.divider,
-  },
-  dividerText: {
-    color: colors.placeholder,
-    fontSize: 12,
-    fontFamily: "ManropeRegular",
-  },
   inputs: {
     gap: 10,
     marginBottom: spacing.md,
@@ -218,21 +222,22 @@ const styles = StyleSheet.create({
   errorText: {
     color: "#ff6b6b",
     fontSize: 13,
-    fontFamily: "ManropeMedium",
+    fontFamily: "ManropeSemiBold",
     textAlign: "center",
   },
-  successBox: {
-    backgroundColor: "rgba(76, 175, 80, 0.15)",
-    borderWidth: 1,
-    borderColor: "rgba(76, 175, 80, 0.4)",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: spacing.md,
+  loginRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: spacing.md,
   },
-  successText: {
-    color: "#81c784",
-    fontSize: 13,
-    fontFamily: "ManropeMedium",
-    textAlign: "center",
+  loginText: {
+    color: colors.placeholder,
+    fontSize: 14,
+    fontFamily: "ManropeRegular",
+  },
+  loginLink: {
+    color: colors.gold,
+    fontSize: 14,
+    fontFamily: "ManropeSemiBold",
   },
 });

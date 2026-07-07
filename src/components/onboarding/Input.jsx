@@ -1,7 +1,15 @@
 import { TextInput, StyleSheet } from "react-native";
 import { colors, borderRadius } from "../../constants/theme";
 
-export default function Input({ placeholder, secureTextEntry, value, onChangeText }) {
+export default function Input({
+  placeholder,
+  secureTextEntry,
+  value,
+  onChangeText,
+  keyboardType,
+  autoCapitalize,
+  maxLength,
+}) {
   return (
     <TextInput
       style={styles.input}
@@ -10,6 +18,9 @@ export default function Input({ placeholder, secureTextEntry, value, onChangeTex
       secureTextEntry={secureTextEntry}
       value={value}
       onChangeText={onChangeText}
+      keyboardType={keyboardType}
+      autoCapitalize={autoCapitalize}
+      maxLength={maxLength}
     />
   );
 }
