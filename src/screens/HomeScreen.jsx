@@ -4,12 +4,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/theme';
 import useAuth from '../hooks/useAuth';
 import useDailyVerse from '../hooks/useDailyVerse';
+import useReadingPlan from '../hooks/useReadingPlan';
 import { UserService, StreakService, UserPlanService } from '../services/firestore.service';
 import { getGreeting } from '../utils/greeting';
 import Header from '../components/home/Header';
 import VerseCard from '../components/home/VerseCard';
 import StreakCard from '../components/home/StreakCard';
 import EmotionalStateChips from '../components/home/EmotionalState';
+import MotivationalBanner from '../components/home/MotivationalBanner';
 import HomeSkeleton from '../components/skeleton/HomeSkeleton';
 import FadeIn from '../components/ui/FadeIn';
 
@@ -22,6 +24,7 @@ export default function HomeScreen({ onNavigate }) {
   const [streak, setStreak] = useState(null);
   const [activePlan, setActivePlan] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { flameCount, daysSinceLastRead } = useReadingPlan();
 
   useEffect(() => {
     const uid = authUser?.uid;
@@ -48,6 +51,10 @@ export default function HomeScreen({ onNavigate }) {
   }, [onNavigate, dailyVerse]);
 
   const handleContinueStreak = useCallback(() => {
+    onNavigate?.('chama');
+  }, [onNavigate]);
+
+  const handleGoToPlan = useCallback(() => {
     onNavigate?.('chama');
   }, [onNavigate]);
 
@@ -104,6 +111,12 @@ export default function HomeScreen({ onNavigate }) {
             </View>
           </FadeIn>
         )}
+
+        <MotivationalBanner
+          daysSinceLastRead={daysSinceLastRead}
+          flameCount={flameCount}
+          onGoToPlan={handleGoToPlan}
+        />
 
         <StreakCard
           streak={streak}

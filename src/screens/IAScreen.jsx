@@ -5,11 +5,12 @@ import {
   StyleSheet,
   FlatList,
   KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Sparkles } from 'lucide-react-native';
 import { colors } from '../constants/theme';
+import useAuth from '../hooks/useAuth';
+import { UserService } from '../services/firestore.service';
 import useGuide from '../hooks/useGuide';
 import MessageBubble from '../components/guide/MessageBubble';
 import InputBar from '../components/guide/InputBar';
@@ -20,10 +21,21 @@ import VerseContext from '../components/ia/VerseContext';
 import FadeIn from '../components/ui/FadeIn';
 import AnimatedPressable from '../components/ui/AnimatedPressable';
 
-export default function IAScreen({ verse, emotionalState, onBack }) {
+export default function IAScreen({ verse, emotionalState, onBack, prefill, prefillContext }) {
   const insets = useSafeAreaInsets();
+  const { user: authUser } = useAuth();
+  const [userData, setUserData] = useState(null);
   const listRef = useRef(null);
   const [initialized, setInitialized] = useState(false);
+
+  const userName = userData?.name?.split(' ')[0] || '';
+
+  useEffect(() => {
+    const uid = authUser?.uid;
+    if (!uid) return;
+    const unsub = UserService.subscribe(uid, setUserData);
+    return unsub;
+  }, [authUser?.uid]);
 
   const {
     messages,
@@ -32,14 +44,16 @@ export default function IAScreen({ verse, emotionalState, onBack }) {
     sendMessage,
     addWelcomeMessage,
     dismissError,
-  } = useGuide();
+  } = useGuide(userName);
 
   useEffect(() => {
     if (!initialized) {
-      addWelcomeMessage(verse);
+      if (!prefill) {
+        addWelcomeMessage(verse);
+      }
       setInitialized(true);
     }
-  }, [initialized, verse, addWelcomeMessage]);
+  }, [initialized, verse, addWelcomeMessage, prefill]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -72,8 +86,8 @@ export default function IAScreen({ verse, emotionalState, onBack }) {
   return (
     <KeyboardAvoidingView
       style={[styles.container, { paddingTop: insets.top }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      behavior="padding"
+      keyboardVerticalOffset={0}
     >
       <View style={styles.header}>
         {onBack && (
@@ -94,7 +108,15 @@ export default function IAScreen({ verse, emotionalState, onBack }) {
         </View>
       </View>
 
-      {verse && <VerseContext verse={verse} />}
+      {verse && !prefillContext && <VerseContext verse={verse} />}
+
+      {prefillContext && (
+        <View style={styles.planContext}>
+          <Text style={styles.planContextLabel}>PLANO DE LEITURA</Text>
+          <Text style={styles.planContextTitle}>{prefillContext.planTitle}</Text>
+          <Text style={styles.planContextDay}>{prefillContext.dayTitle}</Text>
+        </View>
+      )}
 
       <ErrorBanner message={error} onDismiss={dismissError} />
 
@@ -112,7 +134,7 @@ export default function IAScreen({ verse, emotionalState, onBack }) {
         keyboardShouldPersistTaps="handled"
       />
 
-      <InputBar onSend={sendMessage} disabled={isLoading} />
+      <InputBar onSend={sendMessage} disabled={isLoading} initialText={prefill} />
     </KeyboardAvoidingView>
   );
 }
@@ -172,5 +194,30 @@ const styles = StyleSheet.create({
   typingWrap: {
     paddingLeft: 18,
     paddingBottom: 4,
+  },
+  planContext: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: colors.sageBg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.sageBorder,
+  },
+  planContextLabel: {
+    fontSize: 8,
+    fontFamily: 'ManropeSemiBold',
+    color: colors.sage,
+    letterSpacing: 2,
+    marginBottom: 4,
+  },
+  planContextTitle: {
+    fontSize: 12,
+    fontFamily: 'ManropeSemiBold',
+    color: 'rgba(255,255,255,0.8)',
+  },
+  planContextDay: {
+    fontSize: 10,
+    fontFamily: 'ManropeRegular',
+    color: 'rgba(255,255,255,0.5)',
+    marginTop: 2,
   },
 });

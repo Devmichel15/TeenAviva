@@ -39,16 +39,22 @@ export default function VerseCard({ verse, loading, error, onRetry, onPress }) {
   if (error) return <VerseCardError onRetry={onRetry} />;
   if (!verse) return null;
 
+  const isFallback = verse.text.includes("— toca para meditar");
+
   return (
     <FadeIn delay={100}>
       <AnimatedPressable onPress={onPress}>
         <View style={styles.card}>
           <Text style={styles.eyebrow}>versículo do dia</Text>
-          <Text style={styles.text}>
-            "{verse.text}"
-          </Text>
+          {isFallback ? (
+            <Text style={styles.text}>{verse.reference}</Text>
+          ) : (
+            <Text style={styles.text}>
+              "{verse.text}"
+            </Text>
+          )}
           <View style={styles.refRow}>
-            <Text style={styles.ref}>{verse.reference}</Text>
+            <Text style={styles.ref}>{isFallback ? "" : verse.reference}</Text>
             {verse.displayDate && (
               <Text style={styles.date}>{verse.displayDate}</Text>
             )}

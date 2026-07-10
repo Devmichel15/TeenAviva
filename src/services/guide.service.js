@@ -1,10 +1,10 @@
-import { GUIDE_CONFIG, SYSTEM_PROMPT } from '../config/guide.config';
+import { GUIDE_CONFIG, getSystemPrompt } from '../config/guide.config';
 
 const HF_API_URL = 'https://router.huggingface.co/v1/chat/completions';
 
-export async function sendGuideMessage(messages) {
+export async function sendGuideMessage(messages, userName = 'utilizador') {
   const apiMessages = [
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: getSystemPrompt(userName) },
     ...messages.map((m) => ({
       role: m.role === 'user' ? 'user' : 'assistant',
       content: m.content,

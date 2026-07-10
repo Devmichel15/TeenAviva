@@ -7,19 +7,23 @@ const WELCOME_SUGGESTIONS = [
   'O que diz Génesis 1?',
 ];
 
-export default function useGuide() {
+export default function useGuide(userName = '') {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const abortRef = useRef(false);
+  const nameRef = useRef(userName);
+  nameRef.current = userName;
 
   const addWelcomeMessage = useCallback((verse) => {
+    const name = nameRef.current || '';
+    const greeting = name ? `Olá, ${name}!` : 'Olá!';
     const welcomeMsg = {
       id: 'welcome-' + Date.now(),
       role: 'assistant',
       content: verse
-        ? `Olá! Sou o Guia Bíblico da TeenAviva. Posso explicar passagens, personagens, contextos históricos e muito mais sobre a Bíblia.\n\nVou-te ajudar a compreender melhor o que estás a ler. Escolhe uma sugestão ou escreve a tua pergunta.`
-        : `Olá! Sou o Guia Bíblico da TeenAviva.\n\nPosso ajudar-te a:\n• Explicar passagens bíblicas\n• Contextualizar livros e personagens\n• Entender o contexto histórico\n• Compreender palavras em hebraico e grego\n\nEscolhe uma sugestão ou escreve a tua pergunta.`,
+        ? `${greeting} Sou o Guia Bíblico da TeenAviva. Posso explicar passagens, personagens, contextos históricos e muito mais sobre a Bíblia.\n\nVou-te ajudar a compreender melhor o que estás a ler. Escolhe uma sugestão ou escreve a tua pergunta.`
+        : `${greeting} Sou o Guia Bíblico da TeenAviva.\n\nPosso ajudar-te a:\n• Explicar passagens bíblicas\n• Contextualizar livros e personagens\n• Entender o contexto histórico\n• Compreender palavras em hebraico e grego\n\nEscolhe uma sugestão ou escreve a tua pergunta.`,
       timestamp: new Date(),
       suggestions: WELCOME_SUGGESTIONS,
     };
@@ -49,7 +53,7 @@ export default function useGuide() {
           content: m.content,
         }));
 
-        const responseText = await sendGuideMessage(historyForApi);
+        const responseText = await sendGuideMessage(historyForApi, nameRef.current);
 
         if (abortRef.current) return;
 

@@ -9,9 +9,15 @@ import { Send } from 'lucide-react-native';
 import { colors, borderRadius } from '../../constants/theme';
 import AnimatedPressable from '../ui/AnimatedPressable';
 
-export default function InputBar({ onSend, disabled }) {
-  const [text, setText] = useState('');
+export default function InputBar({ onSend, disabled, initialText }) {
+  const [text, setText] = useState(initialText || '');
   const inputRef = useRef(null);
+  const prevInitialRef = useRef(initialText);
+
+  if (initialText && initialText !== prevInitialRef.current) {
+    prevInitialRef.current = initialText;
+    setText(initialText);
+  }
 
   function handleSend() {
     const trimmed = text.trim();
@@ -37,7 +43,7 @@ export default function InputBar({ onSend, disabled }) {
           returnKeyType="send"
           editable={!disabled}
           multiline
-          maxLength={500}
+          maxLength={2000}
         />
         <AnimatedPressable onPress={handleSend} scaleTo={0.88}>
           <View style={[styles.sendBtn, !canSend && styles.sendBtnDisabled]}>

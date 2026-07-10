@@ -27,7 +27,8 @@ export default function Index() {
     return unsub;
   }, [user]);
 
-  if (authLoading || userLoading) {    return (
+  if (authLoading || userLoading) {
+    return (
       <View style={styles.loading}>
         <ActivityIndicator size="large" color={colors.gold} />
       </View>
@@ -42,12 +43,14 @@ export default function Index() {
     return <Redirect href="/(tabs)" />;
   }
 
-  return <PostRegistrationScreen user={user} />;}
+  return <PostRegistrationScreen user={user} />;
+}
 
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',    backgroundColor: colors.background,
+    alignItems: 'center',
+    backgroundColor: colors.background,
   },
 });

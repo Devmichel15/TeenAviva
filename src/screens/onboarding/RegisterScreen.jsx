@@ -27,6 +27,7 @@ export default function RegisterScreen() {
   const [age, setAge] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   function validate() {
     if (!name.trim()) {
@@ -69,7 +70,8 @@ export default function RegisterScreen() {
 
     const validationError = validate();
     if (validationError) {
-      setError(validationError);      return;
+      setError(validationError);
+      return;
     }
 
     setLoading(true);
@@ -78,12 +80,14 @@ export default function RegisterScreen() {
       email: email.trim(),
       password,
       age: parseInt(age, 10),
-    });    setLoading(false);
+    });
+    setLoading(false);
 
     if (result.error) {
       setError(result.error.message);
     } else {
-      router.replace("/");    }
+      router.replace("/");
+    }
   }
 
   return (
@@ -112,11 +116,6 @@ export default function RegisterScreen() {
             Cria a tua conta e começa a tua jornada de fé hoje.
           </Text>
 
-          {error && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          )}
           {error && (
             <View style={styles.errorBox}>
               <Text style={styles.errorText}>{error}</Text>
@@ -174,7 +173,8 @@ export default function RegisterScreen() {
             <Text style={styles.loginLink} onPress={() => router.push("/login")}>
               Iniciar sessão
             </Text>
-          </View>        </ScrollView>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </OnboardingLayout>
   );

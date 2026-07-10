@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { colors, borderRadius } from "../../constants/theme";
 
 export default function SocialButton({ text, icon, onPress, disabled }) {
@@ -9,7 +9,7 @@ export default function SocialButton({ text, icon, onPress, disabled }) {
       activeOpacity={0.8}
       disabled={disabled}
     >
-      {icon}
+      {icon ? <View style={styles.iconWrap}>{icon}</View> : null}
       <Text style={styles.text}>{text}</Text>
     </TouchableOpacity>
   );
@@ -26,6 +26,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: borderRadius.lg,
     gap: 10,
+  },
+  iconWrap: {
+    alignItems: "center",
+    justifyContent: "center",
   },
   disabled: {
     opacity: 0.5,

@@ -6,6 +6,7 @@ import HomeScreen from '../../src/screens/HomeScreen';
 import IAScreen from '../../src/screens/IAScreen';
 import ChamaScreen from '../../src/screens/OfensivaScreen';
 import PerfilScreen from '../../src/screens/PerfilScreen';
+import PlanDayScreen from '../../src/screens/PlanDayScreen';
 
 export default function TabsLayout() {
   const [activeTab, setActiveTab] = useState('home');
@@ -29,7 +30,29 @@ export default function TabsLayout() {
     setIaParams(null);
   }, []);
 
-  const hideTabBar = activeTab === 'ia';
+  const handleBackToChama = useCallback(() => {
+    setActiveTab('chama');
+  }, []);
+
+  const handleContinuePlan = useCallback(() => {
+    setActiveTab('planDay');
+  }, []);
+
+  const handleSelectPlan = useCallback(() => {
+    setActiveTab('planDay');
+  }, []);
+
+  const handleOpenGuideFromPlan = useCallback(({ prefill, context }) => {
+    setIaParams({
+      verse: null,
+      emotionalState: null,
+      prefill,
+      context,
+    });
+    setActiveTab('ia');
+  }, []);
+
+  const hideTabBar = activeTab === 'ia' || activeTab === 'planDay';
 
   return (
     <View style={styles.container}>
@@ -42,9 +65,22 @@ export default function TabsLayout() {
             verse={iaParams?.verse}
             emotionalState={iaParams?.emotionalState}
             onBack={handleBackFromGuide}
+            prefill={iaParams?.prefill}
+            prefillContext={iaParams?.context}
           />
         )}
-        {activeTab === 'chama' && <ChamaScreen />}
+        {activeTab === 'chama' && (
+          <ChamaScreen
+            onContinuePlan={handleContinuePlan}
+            onSelectPlan={handleSelectPlan}
+          />
+        )}
+        {activeTab === 'planDay' && (
+          <PlanDayScreen
+            onBack={handleBackToChama}
+            onOpenGuide={handleOpenGuideFromPlan}
+          />
+        )}
         {activeTab === 'perfil' && <PerfilScreen />}
       </View>
 
