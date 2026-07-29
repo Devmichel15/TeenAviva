@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { AlertCircle } from 'lucide-react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 import FadeIn from '../ui/FadeIn';
 import MarkdownMessage from '../ui/MarkdownMessage';
 import SuggestionChips from './SuggestionChips';
@@ -68,16 +68,16 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   sigDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: colors.sage,
   },
   sigDotError: {
     backgroundColor: 'rgba(201, 59, 59, 0.7)',
   },
   sigName: {
-    fontSize: 7,
+    fontSize: 8,
     letterSpacing: 2,
     textTransform: 'uppercase',
     color: colors.sage,
@@ -89,21 +89,21 @@ const styles = StyleSheet.create({
   userBubble: {
     maxWidth: '80%',
     backgroundColor: 'rgba(140, 94, 60, 0.3)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(140, 94, 60, 0.42)',
-    borderRadius: 16,
+    borderRadius: borderRadius.md,
     borderBottomRightRadius: 4,
     paddingVertical: 10,
-    paddingHorizontal: 13,
+    paddingHorizontal: 14,
   },
   aiBubble: {
     backgroundColor: colors.cardBg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.cardBorder,
-    borderRadius: 16,
+    borderRadius: borderRadius.md,
     borderBottomLeftRadius: 4,
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
   },
   aiBubbleError: {
     backgroundColor: 'rgba(201, 59, 59, 0.08)',

@@ -3,10 +3,13 @@ import { getPlanById } from '../data/readingPlans';
 
 const KEYS = {
   ACTIVE_PLAN: 'reading_plan_active',
-  COMPLETED_DAYS: 'reading_plan_completed',
   DAILY_LOGS: 'reading_plan_logs',
   FLAME_COUNT: 'reading_plan_flames',
 };
+
+function completedKey(planId) {
+  return `reading_plan_completed_${planId}`;
+}
 
 export async function startPlan(planId) {
   const plan = getPlanById(planId);
@@ -41,7 +44,7 @@ export async function getActivePlan() {
 }
 
 export async function getPlanProgress(planId) {
-  const completedStr = await AsyncStorage.getItem(KEYS.COMPLETED_DAYS);
+  const completedStr = await AsyncStorage.getItem(completedKey(planId));
   const logsStr = await AsyncStorage.getItem(KEYS.DAILY_LOGS);
   const flamesStr = await AsyncStorage.getItem(KEYS.FLAME_COUNT);
 
@@ -65,7 +68,7 @@ export async function getPlanProgress(planId) {
 }
 
 export async function completeDay(planId, dayNumber) {
-  const completedStr = await AsyncStorage.getItem(KEYS.COMPLETED_DAYS);
+  const completedStr = await AsyncStorage.getItem(completedKey(planId));
   const completedDays = completedStr ? JSON.parse(completedStr) : [];
 
   if (completedDays.includes(dayNumber)) {
@@ -75,7 +78,7 @@ export async function completeDay(planId, dayNumber) {
 
   completedDays.push(dayNumber);
   completedDays.sort((a, b) => a - b);
-  await AsyncStorage.setItem(KEYS.COMPLETED_DAYS, JSON.stringify(completedDays));
+  await AsyncStorage.setItem(completedKey(planId), JSON.stringify(completedDays));
 
   const logsStr = await AsyncStorage.getItem(KEYS.DAILY_LOGS);
   const dailyLogs = logsStr ? JSON.parse(logsStr) : [];
@@ -123,31 +126,29 @@ export async function getDaysSinceLastRead() {
   return diffDays;
 }
 
-export async function getAllCompletedDays() {
-  const completedStr = await AsyncStorage.getItem(KEYS.COMPLETED_DAYS);
-  return completedStr ? JSON.parse(completedStr) : [];
-}
-
 export async function getFlameCount() {
   const flamesStr = await AsyncStorage.getItem(KEYS.FLAME_COUNT);
   return flamesStr ? parseInt(flamesStr, 10) : 0;
 }
 
 export async function isDayCompleted(planId, dayNumber) {
-  const completed = await getAllCompletedDays();
+  const completed = await getAllCompletedDays(planId);
   return completed.includes(dayNumber);
 }
 
+export async function getAllCompletedDays(planId) {
+  const completedStr = await AsyncStorage.getItem(completedKey(planId));
+  return completedStr ? JSON.parse(completedStr) : [];
+}
+
 export async function resetPlanProgress(planId) {
-  await AsyncStorage.multiRemove([
-    KEYS.ACTIVE_PLAN,
-    KEYS.COMPLETED_DAYS,
-    KEYS.DAILY_LOGS,
-    KEYS.FLAME_COUNT,
-  ]);
+  const keysToRemove = [completedKey(planId)];
+  if (!planId) {
+    keysToRemove.push(KEYS.ACTIVE_PLAN, KEYS.DAILY_LOGS, KEYS.FLAME_COUNT);
+  }
+  await AsyncStorage.multiRemove(keysToRemove);
 }
 
 export async function switchPlan(newPlanId) {
-  await resetPlanProgress(null);
   return startPlan(newPlanId);
 }

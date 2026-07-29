@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { Trophy, Flame, Book, Star, Heart } from 'lucide-react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
+import { Flame, Book, Star, Heart } from 'lucide-react-native';
 
 const ICON_MAP = {
   fire: Flame,
@@ -9,42 +9,44 @@ const ICON_MAP = {
   heart: Heart,
 };
 
-function BadgeIcon({ icon, earned }) {
-  const color = earned ? colors.sage : 'rgba(255,255,255,0.3)';
-  const size = 14;
-
-  const IconComponent = ICON_MAP[icon] || Trophy;
-
-  return <IconComponent size={size} color={color} />;
-}
-
 export default function BadgesGrid({ achievements }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionLabel}>conquistas</Text>
+      <Text style={styles.sectionLabel}>Conquistas</Text>
       <View style={styles.grid}>
-        {achievements.map((badge) => (
-          <View
-            key={badge.id}
-            style={[styles.badge, badge.earned && styles.badgeEarned]}
-          >
+        {achievements.map((badge) => {
+          const IconComponent = ICON_MAP[badge.icon] || Star;
+          return (
             <View
+              key={badge.id}
               style={[
-                styles.iconWrap,
-                badge.earned
-                  ? styles.iconEarned
-                  : styles.iconLocked,
+                styles.badge,
+                badge.earned && styles.badgeEarned,
               ]}
             >
-              <BadgeIcon icon={badge.icon} earned={badge.earned} />
+              <View
+                style={[
+                  styles.iconWrap,
+                  badge.earned ? styles.iconEarned : styles.iconLocked,
+                ]}
+              >
+                <IconComponent
+                  size={14}
+                  color={badge.earned ? colors.sage : 'rgba(255,255,255,0.25)'}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.name,
+                  badge.earned && styles.nameEarned,
+                ]}
+                numberOfLines={1}
+              >
+                {badge.title}
+              </Text>
             </View>
-            <Text
-              style={[styles.name, badge.earned && styles.nameEarned]}
-            >
-              {badge.title}
-            </Text>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </View>
   );
@@ -55,8 +57,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sectionLabel: {
-    fontSize: 8,
-    letterSpacing: 2.5,
+    fontSize: 9,
+    letterSpacing: 2,
     textTransform: 'uppercase',
     color: 'rgba(255,255,255,0.25)',
     fontFamily: 'ManropeSemiBold',
@@ -70,21 +72,21 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: '22%',
     backgroundColor: colors.white04,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 14,
-    padding: 10,
+    borderRadius: borderRadius.card,
+    padding: 12,
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
   },
   badgeEarned: {
     backgroundColor: 'rgba(163,177,138,0.1)',
     borderColor: 'rgba(163,177,138,0.25)',
   },
   iconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -97,9 +99,8 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 9,
     color: 'rgba(255,255,255,0.5)',
-    textAlign: 'center',
-    lineHeight: 12,
     fontFamily: 'ManropeRegular',
+    textAlign: 'center',
   },
   nameEarned: {
     color: colors.sage,

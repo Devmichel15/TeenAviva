@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { Animated } from 'react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 
 export default function Skeleton({
   width = '100%',
   height = 20,
-  borderRadius = 8,
+  borderRadius: radius = 6,
   style,
 }) {
   const opacity = useRef(new Animated.Value(0.3)).current;
@@ -35,7 +35,7 @@ export default function Skeleton({
         {
           width: width,
           height,
-          borderRadius,
+          borderRadius: radius,
           backgroundColor: colors.white08,
           opacity,
         },
@@ -63,12 +63,12 @@ export function SkeletonCard({ lines = 3 }) {
 
 export function SkeletonStreakCard() {
   return (
-    <Skeleton height={100} borderRadius={18} style={{ marginBottom: 12 }} />
+    <Skeleton height={100} borderRadius={14} style={{ marginBottom: 12 }} />
   );
 }
 
 export function SkeletonVerseCard() {
   return (
-    <Skeleton height={130} borderRadius={18} style={{ marginBottom: 12 }} />
+    <Skeleton height={130} borderRadius={14} style={{ marginBottom: 12 }} />
   );
 }

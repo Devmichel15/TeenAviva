@@ -11,6 +11,7 @@ import {
   limit,
   serverTimestamp,
   onSnapshot,
+  arrayUnion,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { COLLECTIONS } from '../constants/collections';
@@ -107,14 +108,26 @@ export const UserPlanService = {
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   },
 
+  async findByPlanId(uid, planId) {
+    const q = query(
+      collection(db, COLLECTIONS.userPlans),
+      where('userId', '==', uid),
+      where('planId', '==', planId),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    return { id: snap.docs[0].id, ...snap.docs[0].data() };
+  },
+
   async create(uid, planId, plan) {
     await setDoc(doc(collection(db, COLLECTIONS.userPlans)), {
       userId: uid,
       planId: plan.id,
       planTitle: plan.title,
-      planDuration: plan.duration,
+      planDuration: plan.totalDays || plan.duration,
       planIcon: plan.icon,
-      planIconColor: plan.iconColor,
+      planIconColor: plan.color || plan.iconColor,
       currentDay: 1,
       startedAt: serverTimestamp(),
       status: 'active',
@@ -127,6 +140,13 @@ export const UserPlanService = {
     await updateDoc(doc(db, COLLECTIONS.userPlans, id), {
       currentDay,
       progress: currentDay,
+      updatedAt: serverTimestamp(),
+    });
+  },
+
+  async appendDailyLog(id, logEntry) {
+    await updateDoc(doc(db, COLLECTIONS.userPlans, id), {
+      dailyLogs: arrayUnion(logEntry),
       updatedAt: serverTimestamp(),
     });
   },
@@ -152,6 +172,29 @@ export const StreakService = {
     const snap = await getDocs(q);
     if (snap.empty) return null;
     return { id: snap.docs[0].id, ...snap.docs[0].data() };
+  },
+
+  async upsert(uid, data) {
+    const q = query(
+      collection(db, COLLECTIONS.streaks),
+      where('userId', '==', uid),
+      limit(1)
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      const ref = doc(collection(db, COLLECTIONS.streaks));
+      await setDoc(ref, {
+        userId: uid,
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    } else {
+      await updateDoc(doc(db, COLLECTIONS.streaks, snap.docs[0].id), {
+        ...data,
+        updatedAt: serverTimestamp(),
+      });
+    }
   },
 
   subscribe(uid, cb) {

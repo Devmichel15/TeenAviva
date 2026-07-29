@@ -1,19 +1,20 @@
 import { View, StyleSheet } from 'react-native';
 import Skeleton from '../ui/Skeleton';
+import { borderRadius } from '../../constants/theme';
 
 export default function IASkeleton() {
   return (
     <View style={styles.container}>
-      <Skeleton height={44} borderRadius={12} style={{ marginBottom: 20 }} />
-      <Skeleton height={60} borderRadius={14} style={{ marginBottom: 16 }} />
+      <Skeleton height={44} borderRadius={borderRadius.md} style={{ marginBottom: 20 }} />
+      <Skeleton height={60} borderRadius={borderRadius.card} style={{ marginBottom: 16 }} />
       <View style={styles.messages}>
         <Skeleton
           width="70%"
           height={50}
-          borderRadius={12}
+          borderRadius={borderRadius.md}
           style={{ alignSelf: 'flex-end', marginBottom: 12 }}
         />
-        <Skeleton width="88%" height={80} borderRadius={12} />
+        <Skeleton width="88%" height={80} borderRadius={borderRadius.md} />
       </View>
     </View>
   );

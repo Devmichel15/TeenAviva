@@ -2,26 +2,74 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Check, BookOpen, Sparkles, ChevronRight } from 'lucide-react-native';
-import { colors, borderRadius } from '../constants/theme';
+import { readingColors, borderRadius } from '../constants/theme';
+import useAuth from '../hooks/useAuth';
 import useReadingPlan from '../hooks/useReadingPlan';
+import { getPlanById } from '../data/readingPlans';
+import { UserPlanService, StreakService } from '../services/firestore.service';
 import { buildReadingPlanPrompt } from '../utils/readingPlanPrompt';
 import AnimatedPressable from '../components/ui/AnimatedPressable';
 import FadeIn from '../components/ui/FadeIn';
 
+function generateWeeklyLog(dailyLogs) {
+  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const today = new Date();
+  const weekDays = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    const dayLabel = days[date.getDay()];
+    const completed = dailyLogs.some((log) => {
+      const logDate = new Date(log.completedAt).toISOString().split('T')[0];
+      return logDate === dateStr;
+    });
+    weekDays.push({ label: dayLabel, completed, isToday: i === 0 });
+  }
+  return weekDays;
+}
+
 export default function PlanDayScreen({ onBack, onOpenGuide }) {
+  const { user: authUser } = useAuth();
   const insets = useSafeAreaInsets();
-  const { activePlan, currentPlanData, currentDayData, progress, completeDay, refresh } = useReadingPlan();
+  const { activePlan, currentPlanData, currentDayData, progress, completeDay, refresh, loading } = useReadingPlan();
   const [justCompleted, setJustCompleted] = useState(false);
 
   const plan = currentPlanData;
   const day = currentDayData;
 
   const handleComplete = useCallback(async () => {
-    if (!activePlan || !day) return;
+    if (!activePlan || !day || !authUser) return;
     setJustCompleted(true);
-    await completeDay(activePlan.id, day.day);
+    try {
+      const newProgress = await completeDay(activePlan.id, day.day);
+      if (authUser.uid) {
+        let userPlan = await UserPlanService.findByPlanId(authUser.uid, activePlan.id);
+        if (!userPlan) {
+          const planData = getPlanById(activePlan.id);
+          if (planData) {
+            await UserPlanService.create(authUser.uid, activePlan.id, planData);
+          }
+          userPlan = await UserPlanService.findByPlanId(authUser.uid, activePlan.id);
+        }
+        if (userPlan) {
+          const nextDay = Math.min(day.day + 1, activePlan.totalDays);
+          await UserPlanService.updateProgress(userPlan.id, nextDay);
+          await UserPlanService.appendDailyLog(userPlan.id, {
+            day: day.day,
+            completedAt: new Date().toISOString(),
+          });
+        }
+        await StreakService.upsert(authUser.uid, {
+          currentStreak: newProgress.flameCount,
+          weeklyLog: generateWeeklyLog(newProgress.dailyLogs),
+        });
+      }
+    } catch (e) {
+      console.warn('Erro ao sincronizar progresso com Firebase:', e);
+    }
     await refresh();
-  }, [activePlan, day, completeDay, refresh]);
+  }, [activePlan, day, authUser, completeDay, refresh]);
 
   const handleOpenGuide = useCallback(() => {
     if (!plan || !day) return;
@@ -36,13 +84,32 @@ export default function PlanDayScreen({ onBack, onOpenGuide }) {
     });
   }, [plan, day, onOpenGuide]);
 
+  if (loading) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <AnimatedPressable onPress={onBack} scaleTo={0.9}>
+            <View style={styles.backBtn}>
+              <ArrowLeft size={18} color={readingColors.textSecondary} strokeWidth={1.5} />
+            </View>
+          </AnimatedPressable>
+          <Text style={styles.headerTitle}>Plano de Leitura</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View style={styles.emptyWrap}>
+          <Text style={styles.emptyText}>Carregando...</Text>
+        </View>
+      </View>
+    );
+  }
+
   if (!activePlan || !plan || !day) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.header}>
           <AnimatedPressable onPress={onBack} scaleTo={0.9}>
             <View style={styles.backBtn}>
-              <ArrowLeft size={18} color="rgba(255,255,255,0.6)" strokeWidth={1.5} />
+              <ArrowLeft size={18} color={readingColors.textSecondary} strokeWidth={1.5} />
             </View>
           </AnimatedPressable>
           <Text style={styles.headerTitle}>Plano de Leitura</Text>
@@ -64,7 +131,7 @@ export default function PlanDayScreen({ onBack, onOpenGuide }) {
       <View style={styles.header}>
         <AnimatedPressable onPress={onBack} scaleTo={0.9}>
           <View style={styles.backBtn}>
-            <ArrowLeft size={18} color="rgba(255,255,255,0.6)" strokeWidth={1.5} />
+            <ArrowLeft size={18} color={readingColors.textSecondary} strokeWidth={1.5} />
           </View>
         </AnimatedPressable>
         <View style={styles.headerCenter}>
@@ -80,12 +147,12 @@ export default function PlanDayScreen({ onBack, onOpenGuide }) {
       >
         <FadeIn delay={50}>
           <View style={styles.planHeader}>
-            <View style={[styles.planIcon, { backgroundColor: plan.color + '22' }]}>
+            <View style={[styles.planIconII, { backgroundColor: plan.color + '18' }]}>
               <BookOpen size={16} color={plan.color} />
             </View>
             <View style={styles.planInfo}>
-              <Text style={styles.planTitle}>{plan.title}</Text>
-              <Text style={styles.planProgress}>
+              <Text style={styles.planTitleR}>{plan.title}</Text>
+              <Text style={styles.planProgressR}>
                 Dia {day.day} de {plan.totalDays}
               </Text>
             </View>
@@ -94,12 +161,12 @@ export default function PlanDayScreen({ onBack, onOpenGuide }) {
 
         <FadeIn delay={100}>
           <View style={styles.dayCard}>
-            <Text style={styles.dayTitle}>{day.title}</Text>
+            <Text style={styles.dayTitleR}>{day.title}</Text>
             <View style={styles.passagesList}>
               {day.passages.map((passage, idx) => (
                 <View key={idx} style={styles.passageItem}>
                   <View style={styles.passageDot} />
-                  <Text style={styles.passageText}>{passage}</Text>
+                  <Text style={styles.passageTextR}>{passage}</Text>
                 </View>
               ))}
             </View>
@@ -108,9 +175,9 @@ export default function PlanDayScreen({ onBack, onOpenGuide }) {
 
         {isDayCompleted && !justCompleted && (
           <FadeIn delay={150}>
-            <View style={styles.completedBanner}>
-              <Check size={16} color={colors.sage} />
-              <Text style={styles.completedText}>Leitura concluída</Text>
+            <View style={styles.completedBannerR}>
+              <Check size={16} color={readingColors.accent} />
+              <Text style={styles.completedTextR}>Leitura concluída</Text>
             </View>
           </FadeIn>
         )}
@@ -120,23 +187,23 @@ export default function PlanDayScreen({ onBack, onOpenGuide }) {
             <View style={styles.actions}>
               {!isDayCompleted && (
                 <AnimatedPressable onPress={handleComplete} scaleTo={0.96}>
-                  <View style={styles.completeBtn}>
-                    <Check size={18} color={colors.background} strokeWidth={2.5} />
-                    <Text style={styles.completeBtnText}>Marcar como concluído</Text>
+                  <View style={styles.completeBtnR}>
+                    <Check size={18} color={readingColors.surface} strokeWidth={2.5} />
+                    <Text style={styles.completeBtnTextR}>Marcar como concluído</Text>
                   </View>
                 </AnimatedPressable>
               )}
 
               <AnimatedPressable onPress={handleOpenGuide} scaleTo={0.96}>
-                <View style={styles.guideBtn}>
-                  <Sparkles size={16} color={colors.gold} strokeWidth={1.5} />
+                <View style={styles.guideBtnR}>
+                  <Sparkles size={16} color={readingColors.highlight} strokeWidth={1.5} />
                   <View style={styles.guideBtnTextWrap}>
-                    <Text style={styles.guideBtnTitle}>Estudar com o Guia + IA</Text>
-                    <Text style={styles.guideBtnSub}>
+                    <Text style={styles.guideBtnTitleR}>Estudar com o Guia + IA</Text>
+                    <Text style={styles.guideBtnSubR}>
                       Aprofunda as tuas leituras com o Guia Bíblico
                     </Text>
                   </View>
-                  <ChevronRight size={16} color="rgba(255,255,255,0.3)" />
+                  <ChevronRight size={16} color={readingColors.textMuted} />
                 </View>
               </AnimatedPressable>
             </View>
@@ -150,7 +217,7 @@ export default function PlanDayScreen({ onBack, onOpenGuide }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: readingColors.background,
   },
   header: {
     flexDirection: 'row',
@@ -159,14 +226,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.white06,
+    borderBottomWidth: 1.5,
+    borderBottomColor: readingColors.divider,
   },
   backBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.button,
+    backgroundColor: readingColors.divider,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -177,59 +244,60 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 13,
     fontFamily: 'ManropeSemiBold',
-    color: 'rgba(255,255,255,0.82)',
+    color: readingColors.text,
     letterSpacing: 0.3,
   },
   headerSpacer: {
-    width: 32,
+    width: 36,
   },
   scroll: {
     flex: 1,
   },
   scrollContent: {
-    padding: 18,
-    gap: 14,
+    padding: 20,
+    gap: 16,
     paddingBottom: 40,
   },
   planHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 4,
+    marginBottom: 2,
   },
-  planIcon: {
+  planIconII: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: borderRadius.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
   planInfo: {
     flex: 1,
   },
-  planTitle: {
+  planTitleR: {
     fontSize: 14,
     fontFamily: 'ManropeSemiBold',
-    color: 'rgba(255,255,255,0.85)',
+    color: readingColors.text,
   },
-  planProgress: {
+  planProgressR: {
     fontSize: 11,
     fontFamily: 'ManropeRegular',
-    color: 'rgba(255,255,255,0.4)',
+    color: readingColors.textSecondary,
     marginTop: 2,
   },
   dayCard: {
-    backgroundColor: colors.cardBg,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    backgroundColor: readingColors.surface,
+    borderWidth: 1.5,
+    borderColor: readingColors.border,
     borderRadius: borderRadius.card,
-    padding: 18,
+    padding: 20,
   },
-  dayTitle: {
-    fontSize: 16,
+  dayTitleR: {
+    fontSize: 18,
     fontFamily: 'ManropeSemiBold',
-    color: 'rgba(255,255,255,0.9)',
+    color: readingColors.text,
     marginBottom: 14,
+    lineHeight: 24,
   },
   passagesList: {
     gap: 10,
@@ -243,57 +311,57 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.gold,
+    backgroundColor: readingColors.accent,
   },
-  passageText: {
-    fontSize: 13,
+  passageTextR: {
+    fontSize: 14,
     fontFamily: 'ManropeRegular',
-    color: 'rgba(255,255,255,0.75)',
-    lineHeight: 20,
+    color: readingColors.textSecondary,
+    lineHeight: 22,
     flex: 1,
   },
-  completedBanner: {
+  completedBannerR: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: 'rgba(163, 177, 138, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(163, 177, 138, 0.3)',
-    borderRadius: 12,
+    backgroundColor: readingColors.accent + '14',
+    borderWidth: 1.5,
+    borderColor: readingColors.accent + '30',
+    borderRadius: borderRadius.md,
     paddingVertical: 12,
   },
-  completedText: {
+  completedTextR: {
     fontSize: 12,
     fontFamily: 'ManropeSemiBold',
-    color: colors.sage,
+    color: readingColors.accentText,
   },
   actions: {
     gap: 10,
     marginTop: 4,
   },
-  completeBtn: {
+  completeBtnR: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: colors.sage,
-    borderRadius: borderRadius.md,
+    backgroundColor: readingColors.accent,
+    borderRadius: borderRadius.button,
     paddingVertical: 14,
   },
-  completeBtnText: {
+  completeBtnTextR: {
     fontSize: 12,
     fontFamily: 'ManropeSemiBold',
-    color: colors.background,
+    color: readingColors.surface,
     letterSpacing: 0.3,
   },
-  guideBtn: {
+  guideBtnR: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: colors.goldBg,
-    borderWidth: 1,
-    borderColor: colors.goldBorder,
+    backgroundColor: readingColors.highlight + '0A',
+    borderWidth: 1.5,
+    borderColor: readingColors.highlight + '20',
     borderRadius: borderRadius.md,
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -301,15 +369,15 @@ const styles = StyleSheet.create({
   guideBtnTextWrap: {
     flex: 1,
   },
-  guideBtnTitle: {
+  guideBtnTitleR: {
     fontSize: 12,
     fontFamily: 'ManropeSemiBold',
-    color: colors.gold,
+    color: readingColors.text,
   },
-  guideBtnSub: {
+  guideBtnSubR: {
     fontSize: 10,
     fontFamily: 'ManropeRegular',
-    color: 'rgba(255,255,255,0.4)',
+    color: readingColors.textSecondary,
     marginTop: 2,
   },
   emptyWrap: {
@@ -319,7 +387,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.3)',
+    color: readingColors.textMuted,
     fontFamily: 'ManropeRegular',
   },
 });

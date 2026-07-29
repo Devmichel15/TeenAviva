@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../constants/theme';
+import { colors, borderRadius } from '../constants/theme';
 import useAuth from '../hooks/useAuth';
 import useDailyVerse from '../hooks/useDailyVerse';
 import useReadingPlan from '../hooks/useReadingPlan';
@@ -126,7 +126,7 @@ export default function HomeScreen({ onNavigate }) {
 
         <EmotionalStateChips onSelect={handleEmotionalState} />
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: insets.bottom + 80 }} />
       </ScrollView>
     </View>
   );
@@ -158,9 +158,9 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     backgroundColor: colors.goldBg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.goldBorder,
-    borderRadius: 18,
+    borderRadius: borderRadius.card,
     padding: 30,
     alignItems: 'center',
   },

@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { BookOpen } from 'lucide-react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 import FadeIn from '../ui/FadeIn';
 
 export default function EmptyState() {
@@ -42,11 +42,11 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
   iconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: borderRadius.card,
     backgroundColor: 'rgba(163, 177, 138, 0.1)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(163, 177, 138, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',

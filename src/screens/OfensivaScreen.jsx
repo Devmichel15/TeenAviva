@@ -5,7 +5,8 @@ import { Flame, Book, Check, ChevronRight } from 'lucide-react-native';
 import { colors, borderRadius } from '../constants/theme';
 import useAuth from '../hooks/useAuth';
 import useReadingPlan from '../hooks/useReadingPlan';
-import { getCategories } from '../data/readingPlans';
+import { getCategories, getPlanById } from '../data/readingPlans';
+import { UserPlanService } from '../services/firestore.service';
 import ChamaSkeleton from '../components/skeleton/OfensivaSkeleton';
 import AnimatedPressable from '../components/ui/AnimatedPressable';
 import FadeIn from '../components/ui/FadeIn';
@@ -31,14 +32,23 @@ export default function ChamaScreen({ onContinuePlan, onSelectPlan }) {
     ? allPlans.filter((p) => p.category === selectedCategory)
     : allPlans;
 
-  const handleSelectPlan = useCallback((planId) => {
+  const handleSelectPlan = useCallback(async (planId) => {
     if (activePlan) {
-      switchPlan(planId);
+      await switchPlan(planId);
     } else {
-      startPlan(planId);
+      await startPlan(planId);
+    }
+    if (authUser?.uid) {
+      const existing = await UserPlanService.findByPlanId(authUser.uid, planId);
+      if (!existing) {
+        const planData = getPlanById(planId);
+        if (planData) {
+          await UserPlanService.create(authUser.uid, planId, planData);
+        }
+      }
     }
     onSelectPlan?.();
-  }, [activePlan, startPlan, switchPlan, onSelectPlan]);
+  }, [activePlan, startPlan, switchPlan, onSelectPlan, authUser]);
 
   const handleContinue = useCallback(() => {
     if (activePlan) {
@@ -188,7 +198,7 @@ export default function ChamaScreen({ onContinuePlan, onSelectPlan }) {
           </View>
         </FadeIn>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: insets.bottom + 80 }} />
       </ScrollView>
     </View>
   );
@@ -227,9 +237,9 @@ const styles = StyleSheet.create({
   heroIcon: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: borderRadius.card,
     backgroundColor: colors.goldBg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.goldBorder,
     alignItems: 'center',
     justifyContent: 'center',
@@ -255,7 +265,7 @@ const styles = StyleSheet.create({
   },
   activePlanCard: {
     backgroundColor: colors.cardBg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.cardBorder,
     borderRadius: borderRadius.card,
     padding: 16,
@@ -283,9 +293,9 @@ const styles = StyleSheet.create({
   progressCircle: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: borderRadius.full,
     backgroundColor: colors.sageBg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.sageBorder,
     alignItems: 'center',
     justifyContent: 'center',
@@ -323,7 +333,7 @@ const styles = StyleSheet.create({
   },
   emptyPlan: {
     backgroundColor: colors.white04,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.white06,
     borderRadius: borderRadius.card,
     padding: 24,
@@ -384,7 +394,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     backgroundColor: colors.white04,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.white06,
     borderRadius: borderRadius.card,
     padding: 14,
@@ -396,7 +406,7 @@ const styles = StyleSheet.create({
   planIcon: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: borderRadius.button,
     alignItems: 'center',
     justifyContent: 'center',
   },

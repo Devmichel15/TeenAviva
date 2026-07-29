@@ -6,7 +6,7 @@ export default function PrimaryButton({ text, onPress, style, disabled }) {
     <TouchableOpacity
       style={[styles.button, style, disabled && styles.disabled]}
       onPress={onPress}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       disabled={disabled}
     >
       <Text style={[styles.text, disabled && styles.disabledText]}>{text}</Text>
@@ -18,12 +18,14 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.lightGreen,
     paddingVertical: 16,
-    borderRadius: borderRadius.xl,
+    borderRadius: borderRadius.button,
+    borderWidth: 1.5,
+    borderColor: colors.sageDark,
     alignItems: "center",
     justifyContent: "center",
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   text: {
     color: colors.black,

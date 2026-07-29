@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { colors, borderRadius } from '../../constants/theme';
 import AnimatedPressable from '../ui/AnimatedPressable';
 
 export default function ErrorBanner({ message, onDismiss }) {
@@ -22,12 +23,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: 'rgba(201, 59, 59, 0.12)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(201, 59, 59, 0.25)',
-    borderRadius: 12,
+    borderRadius: borderRadius.md,
     marginHorizontal: 18,
     marginTop: 8,
-    padding: 10,
+    padding: 12,
     gap: 10,
   },
   text: {

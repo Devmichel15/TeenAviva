@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../constants/theme';
+import { colors, borderRadius } from '../constants/theme';
 import useAuth from '../hooks/useAuth';
 import {
   UserService,
@@ -42,13 +42,18 @@ export default function PerfilScreen() {
 
   useEffect(() => {
     const uid = authUser?.uid;
-    if (!uid) return;
+    if (!uid) {
+      setLoading(false);
+      return;
+    }
 
     const unsubUser = UserService.subscribe(uid, setUserData);
     const unsubStreak = StreakService.subscribe(uid, setStreak);
     const unsubPlans = UserPlanService.subscribe(uid, (plans) => {
       const completed = plans.filter((p) => p.status === 'completed');
       setPlansCompleted(completed.length);
+      const totalChapters = plans.reduce((sum, p) => sum + (p.dailyLogs?.length || p.currentDay - 1 || 0), 0);
+      setChaptersRead(Math.max(totalChapters, 0));
     });
 
     async function fetchAchievements() {
@@ -165,7 +170,7 @@ export default function PerfilScreen() {
           />
         </FadeIn>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: insets.bottom + 80 }} />
       </ScrollView>
     </View>
   );
@@ -193,9 +198,9 @@ const styles = StyleSheet.create({
   },
   logoutBtn: {
     backgroundColor: 'rgba(201, 59, 59, 0.15)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(201, 59, 59, 0.3)',
-    borderRadius: 20,
+    borderRadius: borderRadius.button,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
@@ -215,9 +220,9 @@ const styles = StyleSheet.create({
   },
   errorBox: {
     backgroundColor: 'rgba(201, 59, 59, 0.15)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(201, 59, 59, 0.3)',
-    borderRadius: 12,
+    borderRadius: borderRadius.md,
     padding: 12,
   },
   errorText: {

@@ -1,4 +1,4 @@
-import { View, StyleSheet, Animated } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { colors } from "../../constants/theme";
 
 export default function Indicator({ total, activeIndex }) {

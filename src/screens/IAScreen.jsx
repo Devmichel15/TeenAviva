@@ -5,10 +5,11 @@ import {
   StyleSheet,
   FlatList,
   KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Sparkles } from 'lucide-react-native';
-import { colors } from '../constants/theme';
+import { colors, borderRadius } from '../constants/theme';
 import useAuth from '../hooks/useAuth';
 import { UserService } from '../services/firestore.service';
 import useGuide from '../hooks/useGuide';
@@ -86,8 +87,8 @@ export default function IAScreen({ verse, emotionalState, onBack, prefill, prefi
   return (
     <KeyboardAvoidingView
       style={[styles.container, { paddingTop: insets.top }]}
-      behavior="padding"
-      keyboardVerticalOffset={0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 50 : 0}
     >
       <View style={styles.header}>
         {onBack && (
@@ -151,14 +152,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 12,
-    borderBottomWidth: 1,
+    borderBottomWidth: 1.5,
     borderBottomColor: colors.white06,
     flexShrink: 0,
   },
   backBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: borderRadius.button,
     backgroundColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     backgroundColor: colors.sageBg,
-    borderBottomWidth: 1,
+    borderBottomWidth: 1.5,
     borderBottomColor: colors.sageBorder,
   },
   planContextLabel: {

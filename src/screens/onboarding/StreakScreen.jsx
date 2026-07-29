@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   dayCircle: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: borderRadius.full,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -136,3 +136,4 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
 });
+

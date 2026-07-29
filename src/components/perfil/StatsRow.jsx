@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 
 export default function StatsRow({ streak, chaptersRead, plansCompleted }) {
   return (
@@ -28,15 +28,15 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: colors.white04,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 14,
-    padding: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: borderRadius.card,
+    padding: 14,
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
   },
   number: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '200',
     color: colors.gold,
     fontFamily: 'ManropeLight',

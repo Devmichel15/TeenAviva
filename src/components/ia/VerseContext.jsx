@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 
 export default function VerseContext({ verse }) {
   if (!verse) return null;
@@ -19,13 +19,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 18,
     marginVertical: 10,
     backgroundColor: 'rgba(201,151,58,0.08)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(201,151,58,0.18)',
-    borderRadius: 14,
-    padding: 10,
+    borderRadius: borderRadius.md,
+    padding: 12,
   },
   label: {
-    fontSize: 8,
+    fontSize: 9,
     letterSpacing: 2,
     textTransform: 'uppercase',
     color: 'rgba(201,151,58,0.55)',
@@ -33,11 +33,11 @@ const styles = StyleSheet.create({
     fontFamily: 'ManropeSemiBold',
   },
   verse: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '200',
     color: 'rgba(255,255,255,0.65)',
     fontStyle: 'italic',
-    lineHeight: 17,
+    lineHeight: 18,
     fontFamily: 'ManropeLight',
   },
 });

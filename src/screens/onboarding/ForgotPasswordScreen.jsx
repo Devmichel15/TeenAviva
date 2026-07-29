@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import OnboardingLayout from "../../components/onboarding/OnboardingLayout";
 import PrimaryButton from "../../components/onboarding/PrimaryButton";
 import Input from "../../components/onboarding/Input";
-import { colors, spacing } from "../../constants/theme";
+import { colors, spacing, borderRadius } from "../../constants/theme";
 import useAuth from "../../hooks/useAuth";
 
 export default function ForgotPasswordScreen() {
@@ -154,9 +154,9 @@ const styles = StyleSheet.create({
   },
   errorBox: {
     backgroundColor: "rgba(255, 80, 80, 0.15)",
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: "rgba(255, 80, 80, 0.4)",
-    borderRadius: 12,
+    borderRadius: borderRadius.md,
     padding: 12,
     marginBottom: spacing.md,
   },
@@ -168,9 +168,9 @@ const styles = StyleSheet.create({
   },
   successBox: {
     backgroundColor: "rgba(76, 175, 80, 0.15)",
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: "rgba(76, 175, 80, 0.4)",
-    borderRadius: 12,
+    borderRadius: borderRadius.md,
     padding: 12,
     marginBottom: spacing.md,
   },
@@ -188,3 +188,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
 });
+

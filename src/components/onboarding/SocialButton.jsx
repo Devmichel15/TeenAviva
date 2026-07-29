@@ -6,7 +6,7 @@ export default function SocialButton({ text, icon, onPress, disabled }) {
     <TouchableOpacity
       style={[styles.button, disabled && styles.disabled]}
       onPress={onPress}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       disabled={disabled}
     >
       {icon ? <View style={styles.iconWrap}>{icon}</View> : null}
@@ -21,10 +21,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.cardBg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.cardBorder,
-    paddingVertical: 14,
-    borderRadius: borderRadius.lg,
+    paddingVertical: 15,
+    borderRadius: borderRadius.button,
     gap: 10,
   },
   iconWrap: {
@@ -37,6 +37,6 @@ const styles = StyleSheet.create({
   text: {
     color: colors.white,
     fontSize: 15,
-    fontFamily: "ManropeMedium",
+    fontFamily: "ManropeRegular",
   },
 });

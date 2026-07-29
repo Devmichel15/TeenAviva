@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 
 export default function StreakHero({ streak, weekDays }) {
   return (
@@ -40,10 +40,10 @@ export default function StreakHero({ streak, weekDays }) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'rgba(201,151,58,0.1)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(201,151,58,0.25)',
-    borderRadius: 16,
-    padding: 13,
+    borderRadius: borderRadius.card,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -77,11 +77,11 @@ const styles = StyleSheet.create({
   },
   dayRow: {
     flexDirection: 'row',
-    gap: 3,
+    gap: 4,
   },
   day: {
-    width: 22,
-    height: 22,
+    width: 24,
+    height: 24,
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white06,
   },
   dayText: {
-    fontSize: 7,
+    fontSize: 8,
     fontWeight: '500',
     fontFamily: 'ManropeSemiBold',
   },

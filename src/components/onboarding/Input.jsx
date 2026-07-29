@@ -28,10 +28,10 @@ export default function Input({
 const styles = StyleSheet.create({
   input: {
     backgroundColor: colors.inputBg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.cardBorder,
-    borderRadius: borderRadius.lg,
-    paddingVertical: 14,
+    borderRadius: borderRadius.input,
+    paddingVertical: 15,
     paddingHorizontal: 16,
     color: colors.white,
     fontSize: 15,

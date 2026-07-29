@@ -64,16 +64,16 @@ export default function StreakCard({ streak, activePlan, onContinue }) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.brownCardBg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.brownCardBorder,
     borderRadius: borderRadius.card,
-    padding: 13,
+    padding: 16,
   },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 11,
+    marginBottom: 12,
   },
   left: {
     flexDirection: 'row',
@@ -99,29 +99,30 @@ const styles = StyleSheet.create({
   },
   continueBtn: {
     backgroundColor: colors.sage,
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    borderRadius: borderRadius.button,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
   },
   continueText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '600',
     color: colors.background,
     letterSpacing: 0.5,
     fontFamily: 'ManropeSemiBold',
   },
   planInfo: {
-    marginBottom: 8,
+    marginBottom: 10,
   },
   planName: {
-    fontSize: 10,
+    fontSize: 11,
     color: 'rgba(255,255,255,0.7)',
     fontFamily: 'ManropeRegular',
   },
   planProgress: {
-    fontSize: 9,
+    fontSize: 10,
     color: 'rgba(255,255,255,0.3)',
     fontFamily: 'ManropeRegular',
+    marginTop: 2,
   },
   dayRow: {
     flexDirection: 'row',
@@ -129,8 +130,8 @@ const styles = StyleSheet.create({
   },
   day: {
     flex: 1,
-    height: 28,
-    borderRadius: 7,
+    height: 30,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },

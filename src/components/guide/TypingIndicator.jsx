@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 
 export default function TypingIndicator() {
   const dot1 = useRef(new Animated.Value(0.3)).current;
@@ -70,13 +70,13 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   dot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: colors.sage,
   },
   name: {
-    fontSize: 7,
+    fontSize: 8,
     letterSpacing: 2,
     textTransform: 'uppercase',
     color: colors.sage,
@@ -84,9 +84,9 @@ const styles = StyleSheet.create({
   },
   bubble: {
     backgroundColor: colors.cardBg,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.cardBorder,
-    borderRadius: 16,
+    borderRadius: borderRadius.md,
     borderBottomLeftRadius: 4,
     paddingVertical: 12,
     paddingHorizontal: 16,

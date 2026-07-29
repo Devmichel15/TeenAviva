@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { Book } from 'lucide-react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 import AnimatedPressable from '../ui/AnimatedPressable';
 
 export default function OtherPlans({ plans, onSelect }) {
@@ -13,7 +13,7 @@ export default function OtherPlans({ plans, onSelect }) {
         {plans.slice(0, 2).map((plan) => (
           <AnimatedPressable key={plan.id} onPress={() => onSelect(plan)}>
             <View style={styles.card}>
-              <Book size={15} color="rgba(255,255,255,0.5)" />
+              <Book size={16} color="rgba(255,255,255,0.5)" />
               <Text style={styles.name}>{plan.title}</Text>
               <Text style={styles.duration}>{plan.duration} dias</Text>
             </View>
@@ -29,32 +29,33 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontSize: 8,
-    letterSpacing: 2.5,
+    fontSize: 9,
+    letterSpacing: 2,
     textTransform: 'uppercase',
     color: 'rgba(255,255,255,0.25)',
     fontFamily: 'ManropeSemiBold',
   },
   row: {
     flexDirection: 'row',
-    gap: 7,
+    gap: 8,
   },
   card: {
     flex: 1,
     backgroundColor: colors.white04,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
-    borderRadius: 13,
-    padding: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderRadius: borderRadius.card,
+    padding: 14,
   },
   name: {
-    fontSize: 10,
+    fontSize: 11,
     color: 'rgba(255,255,255,0.6)',
-    lineHeight: 14,
+    lineHeight: 16,
     fontFamily: 'ManropeRegular',
+    marginTop: 6,
   },
   duration: {
-    fontSize: 9,
+    fontSize: 10,
     color: 'rgba(255,255,255,0.25)',
     marginTop: 2,
     fontFamily: 'ManropeRegular',

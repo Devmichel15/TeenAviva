@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { Flame, Check } from 'lucide-react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 
 export default function WeeklyCalendar({ weekDays }) {
   return (
@@ -42,27 +42,27 @@ const styles = StyleSheet.create({
   day: {
     flex: 1,
     borderRadius: 8,
-    paddingVertical: 7,
+    paddingVertical: 8,
     alignItems: 'center',
     gap: 3,
   },
   dayDone: {
     backgroundColor: 'rgba(163,177,138,0.18)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(163,177,138,0.3)',
   },
   dayToday: {
     backgroundColor: 'rgba(201,151,58,0.18)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(201,151,58,0.4)',
   },
   dayOff: {
     backgroundColor: colors.white04,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   label: {
-    fontSize: 7,
+    fontSize: 8,
     color: 'rgba(255,255,255,0.3)',
     fontFamily: 'ManropeSemiBold',
   },

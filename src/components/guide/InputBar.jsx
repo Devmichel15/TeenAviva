@@ -5,11 +5,13 @@ import {
   StyleSheet,
   Keyboard,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Send } from 'lucide-react-native';
 import { colors, borderRadius } from '../../constants/theme';
 import AnimatedPressable from '../ui/AnimatedPressable';
 
 export default function InputBar({ onSend, disabled, initialText }) {
+  const insets = useSafeAreaInsets();
   const [text, setText] = useState(initialText || '');
   const inputRef = useRef(null);
   const prevInitialRef = useRef(initialText);
@@ -31,7 +33,7 @@ export default function InputBar({ onSend, disabled, initialText }) {
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingBottom: insets.bottom + 20 }]}>
         <TextInput
           ref={inputRef}
           style={styles.input}
@@ -57,7 +59,7 @@ export default function InputBar({ onSend, disabled, initialText }) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    borderTopWidth: 1,
+    borderTopWidth: 1.5,
     borderTopColor: colors.white06,
     flexShrink: 0,
   },
@@ -67,25 +69,25 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: 16,
     paddingTop: 10,
-    paddingBottom: 16,
+    paddingBottom: 20,
   },
   input: {
     flex: 1,
     backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.1)',
     borderRadius: borderRadius.input,
     paddingHorizontal: 16,
-    paddingVertical: 11,
+    paddingVertical: 12,
     fontSize: 13,
     color: 'rgba(255,255,255,0.85)',
     fontFamily: 'ManropeRegular',
     maxHeight: 100,
   },
   sendBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.button,
     backgroundColor: colors.sage,
     alignItems: 'center',
     justifyContent: 'center',

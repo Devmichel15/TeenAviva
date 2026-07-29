@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 import FadeIn from '../ui/FadeIn';
 import SuggestionChips from './SuggestionChips';
 
@@ -49,13 +49,13 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   aiDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: colors.sage,
   },
   aiName: {
-    fontSize: 7,
+    fontSize: 8,
     letterSpacing: 2,
     textTransform: 'uppercase',
     color: colors.sage,
@@ -64,25 +64,25 @@ const styles = StyleSheet.create({
   userBubble: {
     maxWidth: '82%',
     backgroundColor: 'rgba(140,94,60,0.32)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(140,94,60,0.45)',
-    borderRadius: 16,
+    borderRadius: borderRadius.md,
     borderBottomRightRadius: 4,
-    padding: 9,
+    padding: 10,
   },
   aiBubble: {},
   userText: {
-    fontSize: 11,
+    fontSize: 12,
     color: 'rgba(255,255,255,0.82)',
     lineHeight: 18,
     fontWeight: '300',
     fontFamily: 'ManropeLight',
   },
   aiText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '200',
     color: 'rgba(255,255,255,0.80)',
-    lineHeight: 21,
+    lineHeight: 22,
     fontStyle: 'italic',
     fontFamily: 'ManropeLight',
   },

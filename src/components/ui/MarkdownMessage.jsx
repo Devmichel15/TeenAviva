@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useWindowDimensions } from 'react-native';
 import Markdown from 'react-native-markdown-display';
-import { colors } from '../../constants/theme';
+import { colors, borderRadius } from '../../constants/theme';
 
 export default function MarkdownMessage({ content }) {
   const { width } = useWindowDimensions();

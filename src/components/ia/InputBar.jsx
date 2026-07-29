@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, borderRadius } from '../../constants/theme';
 import AnimatedPressable from '../ui/AnimatedPressable';
 
@@ -14,6 +15,7 @@ export default function InputBar({
   onSend,
   placeholder = 'Continua a tua meditação...',
 }) {
+  const insets = useSafeAreaInsets();
   const [text, setText] = useState('');
   const inputRef = useRef(null);
 
@@ -28,7 +30,7 @@ export default function InputBar({
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingBottom: insets.bottom + 20 }]}>
         <TextInput
           ref={inputRef}
           style={styles.input}
@@ -57,26 +59,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 8,
     paddingBottom: 20,
-    borderTopWidth: 1,
+    borderTopWidth: 1.5,
     borderTopColor: colors.white06,
     flexShrink: 0,
   },
   input: {
     flex: 1,
     backgroundColor: 'rgba(255,255,255,0.07)',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.1)',
     borderRadius: borderRadius.input,
     paddingHorizontal: 15,
-    paddingVertical: 9,
-    fontSize: 11,
+    paddingVertical: 10,
+    fontSize: 12,
     color: 'rgba(255,255,255,0.8)',
     fontFamily: 'ManropeRegular',
   },
   sendBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.button,
     backgroundColor: colors.sage,
     alignItems: 'center',
     justifyContent: 'center',
