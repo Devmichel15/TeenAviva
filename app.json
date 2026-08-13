@@ -2,12 +2,13 @@
   "expo": {
     "scheme": "teenaviva",
     "name": "Teen Aviva",
-    "slug": "Teen Aviva",
+    "slug": "teen-aviva",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "owner": "devmichel15",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -28,7 +29,10 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "EXPO_PUBLIC_HF_TOKEN": "your_token_here"
+      "EXPO_PUBLIC_HF_TOKEN": "your_token_here",
+      "eas": {
+        "projectId": "951ef051-80e0-434b-950b-0bb3b0332b67"
+      }
     },
     "plugins": [
       "expo-font",
