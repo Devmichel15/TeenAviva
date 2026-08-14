@@ -1,7 +1,8 @@
-import { supabase } from '../supabase/client';
+import { supabase } from "../supabase/client";
 
 const SELECT_COLUMNS =
-  'id, name, email, age, favorite_verse, onboarding_completed, notification_preferences, created_at, updated_at';
+  "id, name, email, age, favorite_verse, onboarding_completed, notification_preferences, created_at, updated_at";
+const profileSubscriptions = new Map();
 
 function mapProfile(row) {
   if (!row) return null;
@@ -20,9 +21,9 @@ function mapProfile(row) {
 
 function toProfileRow(data) {
   const map = {
-    favoriteVerse: 'favorite_verse',
-    onboardingCompleted: 'onboarding_completed',
-    notificationPreferences: 'notification_preferences',
+    favoriteVerse: "favorite_verse",
+    onboardingCompleted: "onboarding_completed",
+    notificationPreferences: "notification_preferences",
   };
   const row = {};
   for (const [key, value] of Object.entries(data)) {
@@ -34,9 +35,9 @@ function toProfileRow(data) {
 export const ProfileService = {
   async get(uid) {
     const { data, error } = await supabase
-      .from('profiles')
+      .from("profiles")
       .select(SELECT_COLUMNS)
-      .eq('id', uid)
+      .eq("id", uid)
       .maybeSingle();
 
     if (error) throw error;
@@ -45,45 +46,71 @@ export const ProfileService = {
 
   async update(uid, data) {
     const { error } = await supabase
-      .from('profiles')
+      .from("profiles")
       .update(toProfileRow(data))
-      .eq('id', uid);
+      .eq("id", uid);
 
     if (error) throw error;
   },
 
   subscribe(uid, cb) {
-    let cancelled = false;
+    if (!uid) return () => {};
 
-    const load = async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select(SELECT_COLUMNS)
-        .eq('id', uid)
-        .maybeSingle();
+    const channelName = `profiles:${uid}`;
+    const existing = profileSubscriptions.get(channelName);
+    const listeners = existing ? existing.listeners : new Set();
 
-      if (!cancelled && !error) cb(mapProfile(data));
-    };
+    if (existing) {
+      listeners.add(cb);
+      profileSubscriptions.set(channelName, {
+        listeners,
+        channel: existing.channel,
+      });
+    } else {
+      const state = { listeners: new Set([cb]), channel: null };
+      profileSubscriptions.set(channelName, state);
 
-    load();
+      const load = async () => {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select(SELECT_COLUMNS)
+          .eq("id", uid)
+          .maybeSingle();
 
-    const channel = supabase
-      .channel(`profiles:${uid}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${uid}`,
-        },
-        load
-      )
-      .subscribe();
+        if (error) return;
+
+        for (const listener of [...state.listeners]) {
+          listener(mapProfile(data));
+        }
+      };
+
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "profiles",
+            filter: `id=eq.${uid}`,
+          },
+          load,
+        )
+        .subscribe();
+
+      state.channel = channel;
+    }
 
     return () => {
-      cancelled = true;
-      supabase.removeChannel(channel);
+      const state = profileSubscriptions.get(channelName);
+      if (!state) return;
+
+      state.listeners.delete(cb);
+
+      if (state.listeners.size === 0) {
+        supabase.removeChannel(state.channel);
+        profileSubscriptions.delete(channelName);
+      }
     };
   },
 };

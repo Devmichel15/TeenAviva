@@ -1,4 +1,6 @@
-import { supabase } from '../supabase/client';
+import { supabase } from "../supabase/client";
+
+const streakSubscriptions = new Map();
 
 function mapStreak(row) {
   if (!row) return null;
@@ -15,9 +17,9 @@ function mapStreak(row) {
 export const StreakService = {
   async get(uid) {
     const { data, error } = await supabase
-      .from('streaks')
-      .select('*')
-      .eq('user_id', uid)
+      .from("streaks")
+      .select("*")
+      .eq("user_id", uid)
       .limit(1)
       .maybeSingle();
 
@@ -26,54 +28,78 @@ export const StreakService = {
   },
 
   async upsert(uid, data) {
-    const { error } = await supabase
-      .from('streaks')
-      .upsert(
-        {
-          user_id: uid,
-          current_streak: data.currentStreak ?? 0,
-          weekly_log: data.weeklyLog ?? [],
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id' }
-      );
+    const { error } = await supabase.from("streaks").upsert(
+      {
+        user_id: uid,
+        current_streak: data.currentStreak ?? 0,
+        weekly_log: data.weeklyLog ?? [],
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
 
     if (error) throw error;
   },
 
   subscribe(uid, cb) {
-    let cancelled = false;
+    if (!uid) return () => {};
 
-    const load = async () => {
-      const { data, error } = await supabase
-        .from('streaks')
-        .select('*')
-        .eq('user_id', uid)
-        .limit(1)
-        .maybeSingle();
+    const channelName = `streaks:${uid}`;
+    const existing = streakSubscriptions.get(channelName);
+    const listeners = existing ? existing.listeners : new Set();
 
-      if (!cancelled && !error) cb(mapStreak(data));
-    };
+    if (existing) {
+      listeners.add(cb);
+      streakSubscriptions.set(channelName, {
+        listeners,
+        channel: existing.channel,
+      });
+    } else {
+      const state = { listeners: new Set([cb]), channel: null };
+      streakSubscriptions.set(channelName, state);
 
-    load();
+      const load = async () => {
+        const { data, error } = await supabase
+          .from("streaks")
+          .select("*")
+          .eq("user_id", uid)
+          .limit(1)
+          .maybeSingle();
 
-    const channel = supabase
-      .channel(`streaks:${uid}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'streaks',
-          filter: `user_id=eq.${uid}`,
-        },
-        load
-      )
-      .subscribe();
+        if (error) return;
+
+        for (const listener of [...state.listeners]) {
+          listener(mapStreak(data));
+        }
+      };
+
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "streaks",
+            filter: `user_id=eq.${uid}`,
+          },
+          load,
+        )
+        .subscribe();
+
+      state.channel = channel;
+    }
 
     return () => {
-      cancelled = true;
-      supabase.removeChannel(channel);
+      const state = streakSubscriptions.get(channelName);
+      if (!state) return;
+
+      state.listeners.delete(cb);
+
+      if (state.listeners.size === 0) {
+        supabase.removeChannel(state.channel);
+        streakSubscriptions.delete(channelName);
+      }
     };
   },
 };
