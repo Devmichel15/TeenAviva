@@ -3,34 +3,12 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Check, BookOpen, Sparkles, ChevronRight } from 'lucide-react-native';
 import { readingColors, borderRadius } from '../constants/theme';
-import useAuth from '../hooks/useAuth';
 import useReadingPlan from '../hooks/useReadingPlan';
-import { getPlanById } from '../data/readingPlans';
-import { UserPlanService, StreakService } from '../services/firestore.service';
 import { buildReadingPlanPrompt } from '../utils/readingPlanPrompt';
 import AnimatedPressable from '../components/ui/AnimatedPressable';
 import FadeIn from '../components/ui/FadeIn';
 
-function generateWeeklyLog(dailyLogs) {
-  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  const today = new Date();
-  const weekDays = [];
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
-    const dateStr = date.toISOString().split('T')[0];
-    const dayLabel = days[date.getDay()];
-    const completed = dailyLogs.some((log) => {
-      const logDate = new Date(log.completedAt).toISOString().split('T')[0];
-      return logDate === dateStr;
-    });
-    weekDays.push({ label: dayLabel, completed, isToday: i === 0 });
-  }
-  return weekDays;
-}
-
 export default function PlanDayScreen({ onBack, onOpenGuide }) {
-  const { user: authUser } = useAuth();
   const insets = useSafeAreaInsets();
   const { activePlan, currentPlanData, currentDayData, progress, completeDay, refresh, loading } = useReadingPlan();
   const [justCompleted, setJustCompleted] = useState(false);
@@ -39,37 +17,15 @@ export default function PlanDayScreen({ onBack, onOpenGuide }) {
   const day = currentDayData;
 
   const handleComplete = useCallback(async () => {
-    if (!activePlan || !day || !authUser) return;
+    if (!activePlan || !day) return;
     setJustCompleted(true);
     try {
-      const newProgress = await completeDay(activePlan.id, day.day);
-      if (authUser.uid) {
-        let userPlan = await UserPlanService.findByPlanId(authUser.uid, activePlan.id);
-        if (!userPlan) {
-          const planData = getPlanById(activePlan.id);
-          if (planData) {
-            await UserPlanService.create(authUser.uid, activePlan.id, planData);
-          }
-          userPlan = await UserPlanService.findByPlanId(authUser.uid, activePlan.id);
-        }
-        if (userPlan) {
-          const nextDay = Math.min(day.day + 1, activePlan.totalDays);
-          await UserPlanService.updateProgress(userPlan.id, nextDay);
-          await UserPlanService.appendDailyLog(userPlan.id, {
-            day: day.day,
-            completedAt: new Date().toISOString(),
-          });
-        }
-        await StreakService.upsert(authUser.uid, {
-          currentStreak: newProgress.flameCount,
-          weeklyLog: generateWeeklyLog(newProgress.dailyLogs),
-        });
-      }
+      await completeDay(activePlan.id, day.day);
     } catch (e) {
-      console.warn('Erro ao sincronizar progresso com Firebase:', e);
+      console.warn('Erro ao concluir o dia:', e);
     }
     await refresh();
-  }, [activePlan, day, authUser, completeDay, refresh]);
+  }, [activePlan, day, completeDay, refresh]);
 
   const handleOpenGuide = useCallback(() => {
     if (!plan || !day) return;
@@ -142,7 +98,10 @@ export default function PlanDayScreen({ onBack, onOpenGuide }) {
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: insets.bottom + 40 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <FadeIn delay={50}>
@@ -256,7 +215,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     gap: 16,
-    paddingBottom: 40,
   },
   planHeader: {
     flexDirection: 'row',

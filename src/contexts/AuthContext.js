@@ -1,6 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import auth from "../firebase/auth";
+import { supabase } from "../supabase/client";
 import {
   login as loginService,
   register as registerService,
@@ -15,12 +14,30 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setUser(data.session?.user ?? null);
+      setLoading(false);
+    }).catch(() => {
+      if (!mounted) return;
+      setUser(null);
       setLoading(false);
     });
 
-    return unsubscribe;
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!mounted) return;
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+    };
   }, []);
 
   async function login(email, password) {

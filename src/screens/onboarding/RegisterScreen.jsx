@@ -24,7 +24,6 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [age, setAge] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -42,16 +41,6 @@ export default function RegisterScreen() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
       return "Insere um email válido";
-    }
-    if (!age.trim()) {
-      return "Insere a tua idade";
-    }
-    const ageNum = parseInt(age, 10);
-    if (isNaN(ageNum) || ageNum !== parseFloat(age)) {
-      return "A idade deve ser um número inteiro";
-    }
-    if (ageNum < 13) {
-      return "Deves ter pelo menos 13 anos";
     }
     if (!password) {
       return "Insere a tua palavra-passe";
@@ -79,7 +68,6 @@ export default function RegisterScreen() {
       name: name.trim(),
       email: email.trim(),
       password,
-      age: parseInt(age, 10),
     });
     setLoading(false);
 
@@ -140,13 +128,6 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               value={email}
               onChangeText={setEmail}
-            />
-            <Input
-              placeholder="Idade"
-              keyboardType="numeric"
-              maxLength={2}
-              value={age}
-              onChangeText={setAge}
             />
             <Input
               placeholder="Cria a tua palavra-passe"

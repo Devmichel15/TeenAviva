@@ -3,6 +3,7 @@ import { View, Animated, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, Sparkles, Flame, User } from 'lucide-react-native';
 import { colors } from '../../constants/theme';
+import { NAVBAR_BOTTOM_MARGIN } from '../../constants/layout';
 import NavItem from './NavItem';
 
 const TABS = [
@@ -39,7 +40,7 @@ export default function Navbar({ activeTab, onTabPress }) {
       style={[
         styles.container,
         {
-          bottom: insets.bottom + 20,
+          bottom: insets.bottom + NAVBAR_BOTTOM_MARGIN,
           opacity: entryAnim,
           transform: [{ translateY: slideY }],
         },

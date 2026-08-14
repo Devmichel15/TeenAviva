@@ -4,7 +4,8 @@ import OnboardingLayout from "../../components/onboarding/OnboardingLayout";
 import PrimaryButton from "../../components/onboarding/PrimaryButton";
 import PlanCard from "../../components/onboarding/PlanCard";
 import { colors, spacing } from "../../constants/theme";
-import { UserService, UserPlanService } from "../../services/firestore.service";
+import { ProfileService } from "../../services/profile.service";
+import { UserPlanService } from "../../services/plan.service";
 
 const plans = [
   { id: "pl_anxiety", title: "Ansiedade — O que Deus diz" },
@@ -21,7 +22,7 @@ export default function PostRegistrationScreen({ user }) {
 
     if (selectedIndex !== null) {
       const plan = plans[selectedIndex];
-      await UserPlanService.create(user.uid, plan, {
+      await UserPlanService.create(user.id, plan, {
         id: plan.id,
         title: plan.title,
         duration: 7,
@@ -30,7 +31,7 @@ export default function PostRegistrationScreen({ user }) {
       });
     }
 
-    await UserService.update(user.uid, { onboardingCompleted: true });
+    await ProfileService.update(user.id, { onboardingCompleted: true });
   }
 
   return (

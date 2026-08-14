@@ -2,10 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, borderRadius } from '../constants/theme';
+import { NAVBAR_BOTTOM_CLEARANCE } from '../constants/layout';
 import useAuth from '../hooks/useAuth';
 import useDailyVerse from '../hooks/useDailyVerse';
 import useReadingPlan from '../hooks/useReadingPlan';
-import { UserService, StreakService, UserPlanService } from '../services/firestore.service';
+import { ProfileService } from '../services/profile.service';
+import { StreakService } from '../services/streak.service';
+import { UserPlanService } from '../services/plan.service';
 import { getGreeting } from '../utils/greeting';
 import Header from '../components/home/Header';
 import VerseCard from '../components/home/VerseCard';
@@ -27,10 +30,10 @@ export default function HomeScreen({ onNavigate }) {
   const { flameCount, daysSinceLastRead } = useReadingPlan();
 
   useEffect(() => {
-    const uid = authUser?.uid;
+    const uid = authUser?.id;
     if (!uid) return;
 
-    const unsubUser = UserService.subscribe(uid, setUserData);
+    const unsubUser = ProfileService.subscribe(uid, setUserData);
     const unsubStreak = StreakService.subscribe(uid, setStreak);
     const unsubPlans = UserPlanService.subscribe(uid, (plans) => {
       const active = plans.find((p) => p.status === 'active');
@@ -44,7 +47,7 @@ export default function HomeScreen({ onNavigate }) {
       unsubStreak();
       unsubPlans();
     };
-  }, [authUser?.uid]);
+  }, [authUser?.id]);
 
   const handleMeditate = useCallback(() => {
     onNavigate?.('ia', { verse: dailyVerse });
@@ -126,7 +129,7 @@ export default function HomeScreen({ onNavigate }) {
 
         <EmotionalStateChips onSelect={handleEmotionalState} />
 
-        <View style={{ height: insets.bottom + 80 }} />
+        <View style={{ height: insets.bottom + NAVBAR_BOTTOM_CLEARANCE }} />
       </ScrollView>
     </View>
   );

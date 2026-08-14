@@ -4,4 +4,6 @@
 
 export const ENV = {
   HF_TOKEN: process.env.EXPO_PUBLIC_HF_TOKEN || '',
+  SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL || '',
+  SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
 };

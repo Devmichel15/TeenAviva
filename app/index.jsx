@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Redirect } from 'expo-router';
 import useAuth from '../src/hooks/useAuth';
-import { UserService } from '../src/services/firestore.service';
+import { ProfileService } from '../src/services/profile.service';
 import { colors } from '../src/constants/theme';
 import OnboardingFlow from '../src/screens/onboarding/OnboardingFlow';
 import PostRegistrationScreen from '../src/screens/onboarding/PostRegistrationScreen';
@@ -19,7 +19,7 @@ export default function Index() {
       return;
     }
 
-    const unsub = UserService.subscribe(user.uid, (data) => {
+    const unsub = ProfileService.subscribe(user.id, (data) => {
       setUserData(data);
       setUserLoading(false);
     });

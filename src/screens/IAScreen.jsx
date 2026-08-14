@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Sparkles } from 'lucide-react-native';
 import { colors, borderRadius } from '../constants/theme';
 import useAuth from '../hooks/useAuth';
-import { UserService } from '../services/firestore.service';
+import { ProfileService } from '../services/profile.service';
 import useGuide from '../hooks/useGuide';
 import MessageBubble from '../components/guide/MessageBubble';
 import InputBar from '../components/guide/InputBar';
@@ -32,11 +32,11 @@ export default function IAScreen({ verse, emotionalState, onBack, prefill, prefi
   const userName = userData?.name?.split(' ')[0] || '';
 
   useEffect(() => {
-    const uid = authUser?.uid;
+    const uid = authUser?.id;
     if (!uid) return;
-    const unsub = UserService.subscribe(uid, setUserData);
+    const unsub = ProfileService.subscribe(uid, setUserData);
     return unsub;
-  }, [authUser?.uid]);
+  }, [authUser?.id]);
 
   const {
     messages,
@@ -84,12 +84,8 @@ export default function IAScreen({ verse, emotionalState, onBack, prefill, prefi
     return null;
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={[styles.container, { paddingTop: insets.top }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 50 : 0}
-    >
+  const content = (
+    <>
       <View style={styles.header}>
         {onBack && (
           <AnimatedPressable onPress={onBack} scaleTo={0.9}>
@@ -136,7 +132,23 @@ export default function IAScreen({ verse, emotionalState, onBack, prefill, prefi
       />
 
       <InputBar onSend={sendMessage} disabled={isLoading} initialText={prefill} />
-    </KeyboardAvoidingView>
+    </>
+  );
+
+  if (Platform.OS === 'ios') {
+    return (
+      <KeyboardAvoidingView
+        style={[styles.container, { paddingTop: insets.top }]}
+        behavior="padding"
+        keyboardVerticalOffset={0}
+      >
+        {content}
+      </KeyboardAvoidingView>
+    );
+  }
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top }]}>{content}</View>
   );
 }
 

@@ -16,8 +16,8 @@ function getInitials(name) {
 export default function AvatarZone({ user, onEditPhoto }) {
   if (!user) return null;
 
-  const joinDate = user.createdAt?.toDate
-    ? formatDate(user.createdAt.toDate())
+  const joinDate = user.createdAt
+    ? formatDate(new Date(user.createdAt))
     : '';
 
   return (

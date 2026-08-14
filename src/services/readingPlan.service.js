@@ -1,154 +1,215 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../supabase/client';
 import { getPlanById } from '../data/readingPlans';
+import { StreakService } from './streak.service';
 
-const KEYS = {
-  ACTIVE_PLAN: 'reading_plan_active',
-  DAILY_LOGS: 'reading_plan_logs',
-  FLAME_COUNT: 'reading_plan_flames',
-};
+const PLAN_SELECT = '*, user_plan_daily_logs(day, completed_at)';
 
-function completedKey(planId) {
-  return `reading_plan_completed_${planId}`;
+function mapPlan(row) {
+  if (!row) return null;
+  const dailyLogs = (row.user_plan_daily_logs || []).map((log) => ({
+    day: log.day,
+    completedAt: log.completed_at,
+  }));
+  const plan = getPlanById(row.plan_id);
+  return {
+    id: row.plan_id,
+    title: row.plan_title,
+    description: plan?.description ?? '',
+    icon: row.plan_icon,
+    color: row.plan_icon_color,
+    category: plan?.category ?? '',
+    totalDays: row.plan_duration,
+    startedAt: row.started_at,
+    currentDay: row.current_day,
+    status: row.status,
+    dailyLogs,
+  };
 }
 
-export async function startPlan(planId) {
+function generateWeeklyLog(dailyLogs) {
+  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const today = new Date();
+  const weekDays = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    const dayLabel = days[date.getDay()];
+    const completed = (dailyLogs || []).some((log) => {
+      const logDate = new Date(log.completedAt).toISOString().split('T')[0];
+      return logDate === dateStr;
+    });
+    weekDays.push({ label: dayLabel, completed, isToday: i === 0 });
+  }
+  return weekDays;
+}
+
+export async function startPlan(uid, planId) {
+  if (!uid) throw new Error('Utilizador não autenticado');
+
   const plan = getPlanById(planId);
   if (!plan) throw new Error('Plano não encontrado');
 
-  const existing = await AsyncStorage.getItem(KEYS.ACTIVE_PLAN);
-  if (existing) {
-    const parsed = JSON.parse(existing);
-    if (parsed.id === planId) return parsed;
-  }
+  const { data: existing, error: findError } = await supabase
+    .from('user_plans')
+    .select(PLAN_SELECT)
+    .eq('user_id', uid)
+    .eq('plan_id', planId)
+    .maybeSingle();
 
-  const activePlan = {
-    id: planId,
-    title: plan.title,
-    description: plan.description,
-    icon: plan.icon,
-    color: plan.color,
-    category: plan.category,
-    totalDays: plan.totalDays,
-    startedAt: new Date().toISOString(),
-    currentDay: 1,
-    status: 'active',
-  };
+  if (findError) throw findError;
+  if (existing) return mapPlan(existing);
 
-  await AsyncStorage.setItem(KEYS.ACTIVE_PLAN, JSON.stringify(activePlan));
-  return activePlan;
+  const { data, error } = await supabase
+    .from('user_plans')
+    .insert({
+      user_id: uid,
+      plan_id: planId,
+      plan_title: plan.title,
+      plan_duration: plan.totalDays,
+      plan_icon: plan.icon,
+      plan_icon_color: plan.color,
+    })
+    .select(PLAN_SELECT)
+    .maybeSingle();
+
+  if (error) throw error;
+  return mapPlan(data);
 }
 
-export async function getActivePlan() {
-  const data = await AsyncStorage.getItem(KEYS.ACTIVE_PLAN);
-  return data ? JSON.parse(data) : null;
+export async function getActivePlan(uid) {
+  if (!uid) return null;
+
+  const { data, error } = await supabase
+    .from('user_plans')
+    .select(PLAN_SELECT)
+    .eq('user_id', uid)
+    .eq('status', 'active')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return mapPlan(data);
 }
 
-export async function getPlanProgress(planId) {
-  const completedStr = await AsyncStorage.getItem(completedKey(planId));
-  const logsStr = await AsyncStorage.getItem(KEYS.DAILY_LOGS);
-  const flamesStr = await AsyncStorage.getItem(KEYS.FLAME_COUNT);
+export async function getPlanProgress(uid, planId) {
+  if (!uid) return null;
 
-  const completedDays = completedStr ? JSON.parse(completedStr) : [];
-  const dailyLogs = logsStr ? JSON.parse(logsStr) : [];
-  const flameCount = flamesStr ? parseInt(flamesStr, 10) : 0;
+  const { data, error } = await supabase
+    .from('user_plans')
+    .select(PLAN_SELECT)
+    .eq('user_id', uid)
+    .eq('plan_id', planId)
+    .maybeSingle();
 
-  const plan = getPlanById(planId);
-  const totalDays = plan ? plan.totalDays : 0;
-  const progressPercent = totalDays > 0 ? Math.round((completedDays.length / totalDays) * 100) : 0;
+  if (error) throw error;
+  if (!data) return null;
+
+  const dailyLogs = (data.user_plan_daily_logs || []).map((log) => ({
+    day: log.day,
+    completedAt: log.completed_at,
+  }));
+  const completedDays = dailyLogs.map((log) => log.day).sort((a, b) => a - b);
+  const totalDays = data.plan_duration || 0;
+  const progressPercent =
+    totalDays > 0
+      ? Math.round((completedDays.length / totalDays) * 100)
+      : 0;
   const isCompleted = completedDays.length >= totalDays;
 
   return {
     completedDays,
     dailyLogs,
-    flameCount,
+    flameCount: completedDays.length,
     totalDays,
     progressPercent,
     isCompleted,
   };
 }
 
-export async function completeDay(planId, dayNumber) {
-  const completedStr = await AsyncStorage.getItem(completedKey(planId));
-  const completedDays = completedStr ? JSON.parse(completedStr) : [];
+export async function completeDay(uid, planId, dayNumber) {
+  if (!uid) throw new Error('Utilizador não autenticado');
 
-  if (completedDays.includes(dayNumber)) {
-    const progress = await getPlanProgress(planId);
-    return progress;
-  }
+  const { data: planRow, error: findError } = await supabase
+    .from('user_plans')
+    .select(PLAN_SELECT)
+    .eq('user_id', uid)
+    .eq('plan_id', planId)
+    .maybeSingle();
 
-  completedDays.push(dayNumber);
-  completedDays.sort((a, b) => a - b);
-  await AsyncStorage.setItem(completedKey(planId), JSON.stringify(completedDays));
+  if (findError) throw findError;
+  if (!planRow) throw new Error('Plano não encontrado');
 
-  const logsStr = await AsyncStorage.getItem(KEYS.DAILY_LOGS);
-  const dailyLogs = logsStr ? JSON.parse(logsStr) : [];
-  dailyLogs.push({
-    day: dayNumber,
-    completedAt: new Date().toISOString(),
+  await supabase.from('user_plan_daily_logs').upsert(
+    {
+      user_plan_id: planRow.id,
+      user_id: uid,
+      day: dayNumber,
+      completed_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_plan_id,day' }
+  );
+
+  const progress = await getPlanProgress(uid, planId);
+  if (!progress) throw new Error('Erro ao calcular o progresso');
+
+  const nextDay = Math.min(
+    Math.max(...progress.completedDays) + 1,
+    planRow.plan_duration
+  );
+  const status = progress.isCompleted ? 'completed' : 'active';
+
+  const { error: updateError } = await supabase
+    .from('user_plans')
+    .update({
+      current_day: nextDay,
+      progress: progress.completedDays.length,
+      status,
+    })
+    .eq('id', planRow.id);
+
+  if (updateError) throw updateError;
+
+  await StreakService.upsert(uid, {
+    currentStreak: progress.flameCount,
+    weeklyLog: generateWeeklyLog(progress.dailyLogs),
   });
-  await AsyncStorage.setItem(KEYS.DAILY_LOGS, JSON.stringify(dailyLogs));
-
-  const flamesStr = await AsyncStorage.getItem(KEYS.FLAME_COUNT);
-  let flameCount = flamesStr ? parseInt(flamesStr, 10) : 0;
-  flameCount += 1;
-  await AsyncStorage.setItem(KEYS.FLAME_COUNT, flameCount.toString());
-
-  const activePlan = await getActivePlan();
-  if (activePlan && activePlan.id === planId) {
-    const nextDay = Math.max(...completedDays) + 1;
-    if (nextDay <= activePlan.totalDays) {
-      activePlan.currentDay = nextDay;
-    }
-    await AsyncStorage.setItem(KEYS.ACTIVE_PLAN, JSON.stringify(activePlan));
-  }
-
-  const progress = await getPlanProgress(planId);
-  if (progress.isCompleted) {
-    const updated = { ...activePlan, status: 'completed' };
-    await AsyncStorage.setItem(KEYS.ACTIVE_PLAN, JSON.stringify(updated));
-  }
 
   return progress;
 }
 
-export async function getDaysSinceLastRead() {
-  const logsStr = await AsyncStorage.getItem(KEYS.DAILY_LOGS);
-  if (!logsStr) return 999;
+export async function getDaysSinceLastRead(uid) {
+  if (!uid) return 999;
 
-  const logs = JSON.parse(logsStr);
-  if (logs.length === 0) return 999;
+  const { data, error } = await supabase
+    .from('user_plan_daily_logs')
+    .select('completed_at')
+    .eq('user_id', uid)
+    .order('completed_at', { ascending: false })
+    .limit(1);
 
-  const lastLog = logs[logs.length - 1];
-  const lastDate = new Date(lastLog.completedAt);
+  if (error) throw error;
+  if (!data || data.length === 0) return 999;
+
+  const lastDate = new Date(data[0].completed_at);
   const now = new Date();
   const diffTime = now.getTime() - lastDate.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 }
 
-export async function getFlameCount() {
-  const flamesStr = await AsyncStorage.getItem(KEYS.FLAME_COUNT);
-  return flamesStr ? parseInt(flamesStr, 10) : 0;
+export async function getFlameCount(uid) {
+  if (!uid) return 0;
+
+  const { count, error } = await supabase
+    .from('user_plan_daily_logs')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', uid);
+
+  if (error) throw error;
+  return count ?? 0;
 }
 
-export async function isDayCompleted(planId, dayNumber) {
-  const completed = await getAllCompletedDays(planId);
-  return completed.includes(dayNumber);
-}
-
-export async function getAllCompletedDays(planId) {
-  const completedStr = await AsyncStorage.getItem(completedKey(planId));
-  return completedStr ? JSON.parse(completedStr) : [];
-}
-
-export async function resetPlanProgress(planId) {
-  const keysToRemove = [completedKey(planId)];
-  if (!planId) {
-    keysToRemove.push(KEYS.ACTIVE_PLAN, KEYS.DAILY_LOGS, KEYS.FLAME_COUNT);
-  }
-  await AsyncStorage.multiRemove(keysToRemove);
-}
-
-export async function switchPlan(newPlanId) {
-  return startPlan(newPlanId);
+export async function switchPlan(uid, planId) {
+  return startPlan(uid, planId);
 }

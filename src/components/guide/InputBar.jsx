@@ -8,10 +8,13 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Send } from 'lucide-react-native';
 import { colors, borderRadius } from '../../constants/theme';
+import { COMPOSER_KEYBOARD_GAP } from '../../constants/layout';
+import useKeyboardVisible from '../../hooks/useKeyboardVisible';
 import AnimatedPressable from '../ui/AnimatedPressable';
 
 export default function InputBar({ onSend, disabled, initialText }) {
   const insets = useSafeAreaInsets();
+  const keyboardVisible = useKeyboardVisible();
   const [text, setText] = useState(initialText || '');
   const inputRef = useRef(null);
   const prevInitialRef = useRef(initialText);
@@ -33,7 +36,16 @@ export default function InputBar({ onSend, disabled, initialText }) {
 
   return (
     <View style={styles.wrapper}>
-      <View style={[styles.container, { paddingBottom: insets.bottom + 20 }]}>
+      <View
+        style={[
+          styles.container,
+          {
+            paddingBottom: keyboardVisible
+              ? COMPOSER_KEYBOARD_GAP
+              : insets.bottom,
+          },
+        ]}
+      >
         <TextInput
           ref={inputRef}
           style={styles.input}
@@ -69,7 +81,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: 16,
     paddingTop: 10,
-    paddingBottom: 20,
   },
   input: {
     flex: 1,

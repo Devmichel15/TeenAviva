@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import useAuth from './useAuth';
 import {
   getActivePlan,
   getPlanProgress,
@@ -11,6 +12,9 @@ import {
 import { getPlanById, getAllPlans } from '../data/readingPlans';
 
 export default function useReadingPlan() {
+  const { user } = useAuth();
+  const uid = user?.id ?? null;
+
   const [activePlan, setActivePlan] = useState(null);
   const [progress, setProgress] = useState(null);
   const [flameCount, setFlameCount] = useState(0);
@@ -18,55 +22,68 @@ export default function useReadingPlan() {
   const [loading, setLoading] = useState(true);
 
   const loadAll = useCallback(async () => {
+    if (!uid) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const plan = await getActivePlan();
+      const plan = await getActivePlan(uid);
       setActivePlan(plan);
 
       if (plan) {
-        const p = await getPlanProgress(plan.id);
+        const p = await getPlanProgress(uid, plan.id);
         setProgress(p);
       } else {
         setProgress(null);
       }
 
-      const flames = await getFlameCount();
+      const flames = await getFlameCount(uid);
       setFlameCount(flames);
 
-      const days = await getDaysSinceLastRead();
+      const days = await getDaysSinceLastRead(uid);
       setDaysSinceLastRead(days);
     } catch (e) {
       console.warn('Erro ao carregar plano:', e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [uid]);
 
   useEffect(() => {
     loadAll();
   }, [loadAll]);
 
-  const handleStartPlan = useCallback(async (planId) => {
-    await startPlan(planId);
-    await loadAll();
-  }, [loadAll]);
+  const handleStartPlan = useCallback(
+    async (planId) => {
+      await startPlan(uid, planId);
+      await loadAll();
+    },
+    [uid, loadAll]
+  );
 
-  const handleCompleteDay = useCallback(async (planId, dayNumber) => {
-    const newProgress = await completeDay(planId, dayNumber);
-    setProgress(newProgress);
-    const flames = await getFlameCount();
-    setFlameCount(flames);
-    const plan = await getActivePlan();
-    setActivePlan(plan);
-    const days = await getDaysSinceLastRead();
-    setDaysSinceLastRead(days);
-    return newProgress;
-  }, []);
+  const handleCompleteDay = useCallback(
+    async (planId, dayNumber) => {
+      const newProgress = await completeDay(uid, planId, dayNumber);
+      setProgress(newProgress);
+      const flames = await getFlameCount(uid);
+      setFlameCount(flames);
+      const plan = await getActivePlan(uid);
+      setActivePlan(plan);
+      const days = await getDaysSinceLastRead(uid);
+      setDaysSinceLastRead(days);
+      return newProgress;
+    },
+    [uid]
+  );
 
-  const handleSwitchPlan = useCallback(async (newPlanId) => {
-    await switchPlan(newPlanId);
-    await loadAll();
-  }, [loadAll]);
+  const handleSwitchPlan = useCallback(
+    async (newPlanId) => {
+      await switchPlan(uid, newPlanId);
+      await loadAll();
+    },
+    [uid, loadAll]
+  );
 
   const handleRefresh = useCallback(async () => {
     await loadAll();

@@ -2,14 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, borderRadius } from '../constants/theme';
+import { NAVBAR_BOTTOM_CLEARANCE } from '../constants/layout';
 import useAuth from '../hooks/useAuth';
-import {
-  UserService,
-  StreakService,
-  UserPlanService,
-  AchievementService,
-  NotificationService,
-} from '../services/firestore.service';
+import { ProfileService } from '../services/profile.service';
+import { StreakService } from '../services/streak.service';
+import { UserPlanService } from '../services/plan.service';
+import { AchievementService } from '../services/achievement.service';
+import { NotificationService } from '../services/notification.service';
 import AvatarZone from '../components/perfil/AvatarZone';
 import StatsRow from '../components/perfil/StatsRow';
 import StreakHero from '../components/perfil/StreakHero';
@@ -41,13 +40,13 @@ export default function PerfilScreen() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const uid = authUser?.uid;
+    const uid = authUser?.id;
     if (!uid) {
       setLoading(false);
       return;
     }
 
-    const unsubUser = UserService.subscribe(uid, setUserData);
+    const unsubUser = ProfileService.subscribe(uid, setUserData);
     const unsubStreak = StreakService.subscribe(uid, setStreak);
     const unsubPlans = UserPlanService.subscribe(uid, (plans) => {
       const completed = plans.filter((p) => p.status === 'completed');
@@ -84,22 +83,22 @@ export default function PerfilScreen() {
       unsubStreak();
       unsubPlans();
     };
-  }, [authUser?.uid]);
+  }, [authUser?.id]);
 
   const handleToggleNotification = useCallback(
     async (key, value) => {
-      if (!authUser?.uid) return;
+      if (!authUser?.id) return;
       const currentPrefs = userData?.notificationPreferences ?? {
         dailyReminder: true,
         streakAlert: true,
         verseOfDay: true,
       };
-      await NotificationService.updatePreferences(authUser.uid, {
+      await NotificationService.updatePreferences(authUser.id, {
         ...currentPrefs,
         [key]: value,
       });
     },
-    [authUser?.uid, userData]
+    [authUser?.id, userData]
   );
 
   if (loading) {
@@ -170,7 +169,7 @@ export default function PerfilScreen() {
           />
         </FadeIn>
 
-        <View style={{ height: insets.bottom + 80 }} />
+        <View style={{ height: insets.bottom + NAVBAR_BOTTOM_CLEARANCE }} />
       </ScrollView>
     </View>
   );

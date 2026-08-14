@@ -3,16 +3,14 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Flame, Book, Check, ChevronRight } from 'lucide-react-native';
 import { colors, borderRadius } from '../constants/theme';
-import useAuth from '../hooks/useAuth';
+import { NAVBAR_BOTTOM_CLEARANCE } from '../constants/layout';
 import useReadingPlan from '../hooks/useReadingPlan';
-import { getCategories, getPlanById } from '../data/readingPlans';
-import { UserPlanService } from '../services/firestore.service';
+import { getCategories } from '../data/readingPlans';
 import ChamaSkeleton from '../components/skeleton/OfensivaSkeleton';
 import AnimatedPressable from '../components/ui/AnimatedPressable';
 import FadeIn from '../components/ui/FadeIn';
 
 export default function ChamaScreen({ onContinuePlan, onSelectPlan }) {
-  const { user: authUser } = useAuth();
   const insets = useSafeAreaInsets();
   const {
     activePlan,
@@ -38,17 +36,8 @@ export default function ChamaScreen({ onContinuePlan, onSelectPlan }) {
     } else {
       await startPlan(planId);
     }
-    if (authUser?.uid) {
-      const existing = await UserPlanService.findByPlanId(authUser.uid, planId);
-      if (!existing) {
-        const planData = getPlanById(planId);
-        if (planData) {
-          await UserPlanService.create(authUser.uid, planId, planData);
-        }
-      }
-    }
     onSelectPlan?.();
-  }, [activePlan, startPlan, switchPlan, onSelectPlan, authUser]);
+  }, [activePlan, startPlan, switchPlan, onSelectPlan]);
 
   const handleContinue = useCallback(() => {
     if (activePlan) {
@@ -198,7 +187,7 @@ export default function ChamaScreen({ onContinuePlan, onSelectPlan }) {
           </View>
         </FadeIn>
 
-        <View style={{ height: insets.bottom + 80 }} />
+        <View style={{ height: insets.bottom + NAVBAR_BOTTOM_CLEARANCE }} />
       </ScrollView>
     </View>
   );
