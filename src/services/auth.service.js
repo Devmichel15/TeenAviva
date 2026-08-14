@@ -1,35 +1,48 @@
 import { supabase } from "../supabase/client";
 
 const errorsMap = {
-  "Invalid login credentials":
-    "Email ou palavra-passe inválidos",
-  "User already registered":
-    "Este email já está registado",
-  "User with this email has been registered":
-    "Este email já está registado",
+  "Invalid login credentials": "Email ou palavra-passe inválidos",
+  "User already registered": "Este email já está registado",
+  "User with this email has been registered": "Este email já está registado",
   "Password should be at least 6 characters":
     "A palavra-passe deve ter pelo menos 6 caracteres",
   "Password should be at least 8 characters":
     "A palavra-passe deve ter pelo menos 8 caracteres",
   "Password should not be one of the top 10 most common passwords":
     "Escolhe uma palavra-passe mais segura",
-  "Email address is not valid":
-    "Email inválido",
-  "Unable to validate email address: invalid format":
-    "Email inválido",
+  "Email address is not valid": "Email inválido",
+  "Unable to validate email address: invalid format": "Email inválido",
   "New password should be different from the old password":
     "A nova palavra-passe deve ser diferente da anterior",
   "For security purposes, you can only request this after 60 seconds.":
     "Aguarda um momento antes de tentar novamente.",
-  "Too many requests":
-    "Demasiadas tentativas. Tenta novamente mais tarde",
-  "Rate limit exceeded":
-    "Demasiadas tentativas. Tenta novamente mais tarde",
-  "Network request failed":
-    "Erro de rede. Verifica a tua ligação",
-  "fetch failed":
-    "Erro de rede. Verifica a tua ligação",
+  "Too many requests": "Demasiadas tentativas. Tenta novamente mais tarde",
+  "Rate limit exceeded": "Demasiadas tentativas. Tenta novamente mais tarde",
+  "Network request failed": "Erro de rede. Verifica a tua ligação",
+  "fetch failed": "Erro de rede. Verifica a tua ligação",
 };
+
+async function withTimeout(
+  promiseFactory,
+  timeoutMs = 10000,
+  label = "Supabase request",
+) {
+  let timeoutId;
+
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promiseFactory(), timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
 
 function translateError(error) {
   if (!error) {
@@ -47,32 +60,56 @@ function translateError(error) {
 
 export async function login(email, password) {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error } = await withTimeout(
+      () =>
+        supabase.auth.signInWithPassword({
+          email,
+          password,
+        }),
+      10000,
+      "Supabase signInWithPassword",
+    );
 
     if (error) return { user: null, error: translateError(error) };
     return { user: data.user, error: null };
   } catch (error) {
+    console.error("Login failed:", error);
     return { user: null, error: translateError(error) };
   }
 }
 
 export async function register({ name, email, password }) {
   try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name },
-      },
-    });
+    const { data, error } = await withTimeout(
+      () =>
+        supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { name },
+          },
+        }),
+      10000,
+      "Supabase signUp",
+    );
 
-    if (error) return { user: null, error: translateError(error) };
+    if (error) {
+      console.error("Signup error:", error);
+      return { user: null, error: translateError(error) };
+    }
+
+    if (!data?.user) {
+      const fallback = {
+        code: "signup-no-user",
+        message: "A criação da conta falhou. Tenta novamente.",
+      };
+      console.error("Signup returned no user:", data);
+      return { user: null, error: fallback };
+    }
 
     return { user: data.user, error: null };
   } catch (error) {
+    console.error("Signup failed:", error);
     return { user: null, error: translateError(error) };
   }
 }

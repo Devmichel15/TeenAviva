@@ -1,6 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../supabase/client";
 
+async function withTimeout(
+  promiseFactory,
+  timeoutMs = 10000,
+  label = "Supabase request",
+) {
+  let timeoutId;
+
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promiseFactory(), timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 export function normalizeDevotional(row) {
   if (!row) return null;
 
@@ -12,7 +34,7 @@ export function normalizeDevotional(row) {
     content: row.content,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    authorName: author.name || author.full_name || "TeenAviva",
+    authorName: author.name || "TeenAviva",
     avatarUrl: author.avatar_url || null,
     optimistic: Boolean(row.__optimistic),
   };
@@ -54,7 +76,11 @@ export function useDevotionals() {
         query = query.lt("created_at", cursorRef.current);
       }
 
-      const { data, error: fetchError } = await query;
+      const { data, error: fetchError } = await withTimeout(
+        () => query,
+        10000,
+        "Supabase fetch devotionals",
+      );
 
       if (fetchError) throw fetchError;
 
@@ -97,8 +123,11 @@ export function useDevotionals() {
         return { ok: false };
       }
 
-      const { data: authData, error: authError } =
-        await supabase.auth.getUser();
+      const { data: authData, error: authError } = await withTimeout(
+        () => supabase.auth.getUser(),
+        10000,
+        "Supabase getUser for devotional",
+      );
 
       if (authError || !authData?.user) {
         setError("Sessão expirada. Inicia sessão novamente.");
@@ -111,7 +140,10 @@ export function useDevotionals() {
         content: trimmed,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        authorName: authData.user.user_metadata?.name || "Tu",
+        authorName:
+          authData.user.user_metadata?.name ||
+          authData.user.email?.split("@")[0] ||
+          "Tu",
         avatarUrl: null,
         optimistic: true,
       };
@@ -122,16 +154,21 @@ export function useDevotionals() {
       setError(null);
 
       try {
-        const { data, error: insertError } = await supabase
-          .from("devotionals")
-          .insert({
-            author_id: authData.user.id,
-            content: trimmed,
-          })
-          .select(
-            "id, content, author_id, created_at, updated_at, profiles!author_id(name, avatar_url)",
-          )
-          .single();
+        const { data, error: insertError } = await withTimeout(
+          () =>
+            supabase
+              .from("devotionals")
+              .insert({
+                author_id: authData.user.id,
+                content: trimmed,
+              })
+              .select(
+                "id, content, author_id, created_at, updated_at, profiles!author_id(name, avatar_url)",
+              )
+              .single(),
+          10000,
+          "Supabase insert devotional",
+        );
 
         if (insertError) throw insertError;
 
@@ -144,6 +181,7 @@ export function useDevotionals() {
 
         return { ok: true, devotional: saved };
       } catch (insertError) {
+        console.error("createDevotional failed:", insertError);
         setDevotionals((current) =>
           rollbackOptimisticDevotional(current, optimistic.id),
         );
