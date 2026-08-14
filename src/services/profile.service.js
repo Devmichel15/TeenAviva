@@ -1,7 +1,7 @@
 import { supabase } from "../supabase/client";
 
 const SELECT_COLUMNS =
-  "id, name, email, age, favorite_verse, onboarding_completed, notification_preferences, created_at, updated_at";
+  "id, name, email, age, favorite_verse, avatar_url, onboarding_completed, notification_preferences, created_at, updated_at";
 const profileSubscriptions = new Map();
 
 function mapProfile(row) {
@@ -12,6 +12,7 @@ function mapProfile(row) {
     email: row.email,
     age: row.age,
     favoriteVerse: row.favorite_verse,
+    avatarUrl: row.avatar_url,
     onboardingCompleted: row.onboarding_completed,
     notificationPreferences: row.notification_preferences,
     createdAt: row.created_at,
@@ -22,6 +23,7 @@ function mapProfile(row) {
 function toProfileRow(data) {
   const map = {
     favoriteVerse: "favorite_verse",
+    avatarUrl: "avatar_url",
     onboardingCompleted: "onboarding_completed",
     notificationPreferences: "notification_preferences",
   };

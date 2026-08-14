@@ -1,14 +1,14 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { Camera } from 'lucide-react-native';
-import { colors } from '../../constants/theme';
-import AnimatedPressable from '../ui/AnimatedPressable';
-import { formatDate } from '../../utils/formatting';
+import { Image, View, Text, StyleSheet } from "react-native";
+import { Camera } from "lucide-react-native";
+import { colors } from "../../constants/theme";
+import AnimatedPressable from "../ui/AnimatedPressable";
+import { formatDate } from "../../utils/formatting";
 
 function getInitials(name) {
   return name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 }
@@ -16,15 +16,20 @@ function getInitials(name) {
 export default function AvatarZone({ user, onEditPhoto }) {
   if (!user) return null;
 
-  const joinDate = user.createdAt
-    ? formatDate(new Date(user.createdAt))
-    : '';
+  const joinDate = user.createdAt ? formatDate(new Date(user.createdAt)) : "";
 
   return (
     <View style={styles.container}>
       <AnimatedPressable onPress={onEditPhoto}>
         <View style={styles.avatar}>
-          <Text style={styles.initials}>{getInitials(user.name)}</Text>
+          {user.avatarUrl ? (
+            <Image
+              source={{ uri: user.avatarUrl }}
+              style={styles.avatarImage}
+            />
+          ) : (
+            <Text style={styles.initials}>{getInitials(user.name)}</Text>
+          )}
           <View style={styles.editBadge}>
             <Camera size={10} color={colors.background} />
           </View>
@@ -33,7 +38,7 @@ export default function AvatarZone({ user, onEditPhoto }) {
       <View style={styles.info}>
         <Text style={styles.name}>{user.name}</Text>
         <Text style={styles.since}>
-          {joinDate ? `membro desde ${joinDate}` : ''}
+          {joinDate ? `membro desde ${joinDate}` : ""}
         </Text>
         {user.favoriteVerse && (
           <Text style={styles.verse}>"{user.favoriteVerse}"</Text>
@@ -45,37 +50,42 @@ export default function AvatarZone({ user, onEditPhoto }) {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 16,
   },
   avatar: {
     width: 64,
     height: 64,
     borderRadius: 14,
-    backgroundColor: 'rgba(140,94,60,0.3)',
+    backgroundColor: "rgba(140,94,60,0.3)",
     borderWidth: 2,
-    borderColor: 'rgba(140,94,60,0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    borderColor: "rgba(140,94,60,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
   },
   initials: {
     fontSize: 20,
-    fontWeight: '200',
-    color: 'rgba(255,255,255,0.85)',
-    fontFamily: 'ManropeLight',
+    fontWeight: "200",
+    color: "rgba(255,255,255,0.85)",
+    fontFamily: "ManropeLight",
   },
   editBadge: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -2,
     right: -2,
     width: 20,
     height: 20,
     borderRadius: 6,
     backgroundColor: colors.sage,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1.5,
     borderColor: colors.background,
   },
@@ -85,21 +95,21 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 18,
-    fontWeight: '300',
-    color: '#fff',
-    fontFamily: 'ManropeLight',
+    fontWeight: "300",
+    color: "#fff",
+    fontFamily: "ManropeLight",
   },
   since: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.3)',
+    color: "rgba(255,255,255,0.3)",
     letterSpacing: 1,
-    fontFamily: 'ManropeRegular',
+    fontFamily: "ManropeRegular",
   },
   verse: {
     fontSize: 11,
     color: colors.sage,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     marginTop: 2,
-    fontFamily: 'ManropeRegular',
+    fontFamily: "ManropeRegular",
   },
 });

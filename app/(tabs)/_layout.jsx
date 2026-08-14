@@ -1,15 +1,16 @@
-import { useState, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { colors } from '../../src/constants/theme';
-import Navbar from '../../src/components/navbar/Navbar';
-import HomeScreen from '../../src/screens/HomeScreen';
-import IAScreen from '../../src/screens/IAScreen';
-import ChamaScreen from '../../src/screens/OfensivaScreen';
-import PerfilScreen from '../../src/screens/PerfilScreen';
-import PlanDayScreen from '../../src/screens/PlanDayScreen';
+import { useState, useCallback } from "react";
+import { View, StyleSheet } from "react-native";
+import { colors } from "../../src/constants/theme";
+import Navbar from "../../src/components/navbar/Navbar";
+import HomeScreen from "../../src/screens/HomeScreen";
+import IAScreen from "../../src/screens/IAScreen";
+import ChamaScreen from "../../src/screens/OfensivaScreen";
+import DevotionalsScreen from "../../src/screens/DevotionalsScreen";
+import PerfilScreen from "../../src/screens/PerfilScreen";
+import PlanDayScreen from "../../src/screens/PlanDayScreen";
 
 export default function TabsLayout() {
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState("home");
   const [iaParams, setIaParams] = useState(null);
 
   const handleTabPress = useCallback((key) => {
@@ -17,29 +18,29 @@ export default function TabsLayout() {
   }, []);
 
   const handleNavigate = useCallback((screen, params) => {
-    if (screen === 'ia') {
+    if (screen === "ia") {
       setIaParams(params);
-      setActiveTab('ia');
-    } else if (screen === 'chama') {
-      setActiveTab('chama');
+      setActiveTab("ia");
+    } else if (screen === "chama") {
+      setActiveTab("chama");
     }
   }, []);
 
   const handleBackFromGuide = useCallback(() => {
-    setActiveTab('home');
+    setActiveTab("home");
     setIaParams(null);
   }, []);
 
   const handleBackToChama = useCallback(() => {
-    setActiveTab('chama');
+    setActiveTab("chama");
   }, []);
 
   const handleContinuePlan = useCallback(() => {
-    setActiveTab('planDay');
+    setActiveTab("planDay");
   }, []);
 
   const handleSelectPlan = useCallback(() => {
-    setActiveTab('planDay');
+    setActiveTab("planDay");
   }, []);
 
   const handleOpenGuideFromPlan = useCallback(({ prefill, context }) => {
@@ -49,18 +50,16 @@ export default function TabsLayout() {
       prefill,
       context,
     });
-    setActiveTab('ia');
+    setActiveTab("ia");
   }, []);
 
-  const hideTabBar = activeTab === 'ia' || activeTab === 'planDay';
+  const hideTabBar = activeTab === "ia" || activeTab === "planDay";
 
   return (
     <View style={styles.container}>
       <View style={styles.screenContainer}>
-        {activeTab === 'home' && (
-          <HomeScreen onNavigate={handleNavigate} />
-        )}
-        {activeTab === 'ia' && (
+        {activeTab === "home" && <HomeScreen onNavigate={handleNavigate} />}
+        {activeTab === "ia" && (
           <IAScreen
             verse={iaParams?.verse}
             emotionalState={iaParams?.emotionalState}
@@ -69,19 +68,20 @@ export default function TabsLayout() {
             prefillContext={iaParams?.context}
           />
         )}
-        {activeTab === 'chama' && (
+        {activeTab === "chama" && (
           <ChamaScreen
             onContinuePlan={handleContinuePlan}
             onSelectPlan={handleSelectPlan}
           />
         )}
-        {activeTab === 'planDay' && (
+        {activeTab === "planDay" && (
           <PlanDayScreen
             onBack={handleBackToChama}
             onOpenGuide={handleOpenGuideFromPlan}
           />
         )}
-        {activeTab === 'perfil' && <PerfilScreen />}
+        {activeTab === "devotionals" && <DevotionalsScreen />}
+        {activeTab === "perfil" && <PerfilScreen />}
       </View>
 
       {!hideTabBar && (

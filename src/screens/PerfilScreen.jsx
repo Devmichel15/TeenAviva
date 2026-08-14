@@ -1,29 +1,62 @@
-import { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, borderRadius } from '../constants/theme';
-import { NAVBAR_BOTTOM_CLEARANCE } from '../constants/layout';
-import useAuth from '../hooks/useAuth';
-import { ProfileService } from '../services/profile.service';
-import { StreakService } from '../services/streak.service';
-import { UserPlanService } from '../services/plan.service';
-import { AchievementService } from '../services/achievement.service';
-import { NotificationService } from '../services/notification.service';
-import AvatarZone from '../components/perfil/AvatarZone';
-import StatsRow from '../components/perfil/StatsRow';
-import StreakHero from '../components/perfil/StreakHero';
-import BadgesGrid from '../components/perfil/BadgesGrid';
-import NotificationList from '../components/perfil/NotificationList';
-import PerfilSkeleton from '../components/skeleton/PerfilSkeleton';
-import FadeIn from '../components/ui/FadeIn';
-import AnimatedPressable from '../components/ui/AnimatedPressable';
+import { useState, useEffect, useCallback } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { colors, borderRadius } from "../constants/theme";
+import { NAVBAR_BOTTOM_CLEARANCE } from "../constants/layout";
+import useAuth from "../hooks/useAuth";
+import { ProfileService } from "../services/profile.service";
+import { StreakService } from "../services/streak.service";
+import { UserPlanService } from "../services/plan.service";
+import { AchievementService } from "../services/achievement.service";
+import { NotificationService } from "../services/notification.service";
+import AvatarZone from "../components/perfil/AvatarZone";
+import AvatarPicker from "../components/perfil/AvatarPicker";
+import StatsRow from "../components/perfil/StatsRow";
+import StreakHero from "../components/perfil/StreakHero";
+import BadgesGrid from "../components/perfil/BadgesGrid";
+import NotificationList from "../components/perfil/NotificationList";
+import PerfilSkeleton from "../components/skeleton/PerfilSkeleton";
+import FadeIn from "../components/ui/FadeIn";
+import AnimatedPressable from "../components/ui/AnimatedPressable";
 
 function getMockAchievements() {
   return [
-    { id: '1', title: '7 dias seguidos', description: 'Completa 7 dias de leitura consecutivos', icon: 'fire', requirement: 'streak', requirementValue: 7, earned: true },
-    { id: '2', title: '1º plano completo', description: 'Completa o teu primeiro plano', icon: 'book', requirement: 'plans', requirementValue: 1, earned: true },
-    { id: '3', title: '30 dias de Chama', description: 'Alcança 30 dias de Chama', icon: 'star', requirement: 'streak', requirementValue: 30, earned: false },
-    { id: '4', title: '5 planos feitos', description: 'Completa 5 planos de leitura', icon: 'heart', requirement: 'plans', requirementValue: 5, earned: false },
+    {
+      id: "1",
+      title: "7 dias seguidos",
+      description: "Completa 7 dias de leitura consecutivos",
+      icon: "fire",
+      requirement: "streak",
+      requirementValue: 7,
+      earned: true,
+    },
+    {
+      id: "2",
+      title: "1º plano completo",
+      description: "Completa o teu primeiro plano",
+      icon: "book",
+      requirement: "plans",
+      requirementValue: 1,
+      earned: true,
+    },
+    {
+      id: "3",
+      title: "30 dias de Chama",
+      description: "Alcança 30 dias de Chama",
+      icon: "star",
+      requirement: "streak",
+      requirementValue: 30,
+      earned: false,
+    },
+    {
+      id: "4",
+      title: "5 planos feitos",
+      description: "Completa 5 planos de leitura",
+      icon: "heart",
+      requirement: "plans",
+      requirementValue: 5,
+      earned: false,
+    },
   ];
 }
 
@@ -39,6 +72,13 @@ export default function PerfilScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const handleAvatarUpdated = useCallback((avatarUrl) => {
+    setUserData((current) => ({
+      ...(current || {}),
+      avatarUrl,
+    }));
+  }, []);
+
   useEffect(() => {
     const uid = authUser?.id;
     if (!uid) {
@@ -49,9 +89,12 @@ export default function PerfilScreen() {
     const unsubUser = ProfileService.subscribe(uid, setUserData);
     const unsubStreak = StreakService.subscribe(uid, setStreak);
     const unsubPlans = UserPlanService.subscribe(uid, (plans) => {
-      const completed = plans.filter((p) => p.status === 'completed');
+      const completed = plans.filter((p) => p.status === "completed");
       setPlansCompleted(completed.length);
-      const totalChapters = plans.reduce((sum, p) => sum + (p.dailyLogs?.length || p.currentDay - 1 || 0), 0);
+      const totalChapters = plans.reduce(
+        (sum, p) => sum + (p.dailyLogs?.length || p.currentDay - 1 || 0),
+        0,
+      );
       setChaptersRead(Math.max(totalChapters, 0));
     });
 
@@ -62,7 +105,9 @@ export default function PerfilScreen() {
           AchievementService.getUserAchievements(uid),
         ]);
 
-        const earnedIds = new Set(userAch.filter((a) => a.earned).map((a) => a.achievementId));
+        const earnedIds = new Set(
+          userAch.filter((a) => a.earned).map((a) => a.achievementId),
+        );
         const merged = allAchievements.map((a) => ({
           ...a,
           earned: earnedIds.has(a.id),
@@ -98,7 +143,7 @@ export default function PerfilScreen() {
         [key]: value,
       });
     },
-    [authUser?.id, userData]
+    [authUser?.id, userData],
   );
 
   if (loading) {
@@ -134,7 +179,8 @@ export default function PerfilScreen() {
         )}
 
         <FadeIn delay={50}>
-          <AvatarZone user={userData} />
+          <AvatarPicker user={userData} onAvatarUpdated={handleAvatarUpdated} />
+          <AvatarZone user={userData} onEditPhoto={() => {}} />
         </FadeIn>
 
         <FadeIn delay={100}>
@@ -181,33 +227,33 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 18,
     paddingTop: 30,
     flexShrink: 0,
   },
   headerTitle: {
     fontSize: 13,
-    fontWeight: '300',
-    color: 'rgba(255,255,255,0.7)',
+    fontWeight: "300",
+    color: "rgba(255,255,255,0.7)",
     letterSpacing: 1.5,
-    fontFamily: 'ManropeLight',
+    fontFamily: "ManropeLight",
   },
   logoutBtn: {
-    backgroundColor: 'rgba(201, 59, 59, 0.15)',
+    backgroundColor: "rgba(201, 59, 59, 0.15)",
     borderWidth: 1.5,
-    borderColor: 'rgba(201, 59, 59, 0.3)',
+    borderColor: "rgba(201, 59, 59, 0.3)",
     borderRadius: borderRadius.button,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
   logoutText: {
     fontSize: 10,
-    color: 'rgba(255, 100, 100, 0.8)',
+    color: "rgba(255, 100, 100, 0.8)",
     letterSpacing: 0.5,
-    fontFamily: 'ManropeSemiBold',
+    fontFamily: "ManropeSemiBold",
   },
   scroll: {
     flex: 1,
@@ -218,16 +264,16 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   errorBox: {
-    backgroundColor: 'rgba(201, 59, 59, 0.15)',
+    backgroundColor: "rgba(201, 59, 59, 0.15)",
     borderWidth: 1.5,
-    borderColor: 'rgba(201, 59, 59, 0.3)',
+    borderColor: "rgba(201, 59, 59, 0.3)",
     borderRadius: borderRadius.md,
     padding: 12,
   },
   errorText: {
     fontSize: 11,
-    color: 'rgba(255, 150, 150, 0.8)',
-    fontFamily: 'ManropeRegular',
-    textAlign: 'center',
+    color: "rgba(255, 150, 150, 0.8)",
+    fontFamily: "ManropeRegular",
+    textAlign: "center",
   },
 });
