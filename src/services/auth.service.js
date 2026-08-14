@@ -3,8 +3,6 @@ import { supabase } from "../supabase/client";
 const errorsMap = {
   "Invalid login credentials":
     "Email ou palavra-passe inválidos",
-  "Email not confirmed":
-    "Email ainda não confirmado. Verifica a tua caixa de entrada.",
   "User already registered":
     "Este email já está registado",
   "User with this email has been registered":
@@ -73,17 +71,6 @@ export async function register({ name, email, password }) {
 
     if (error) return { user: null, error: translateError(error) };
 
-    if (!data.session) {
-      return {
-        user: null,
-        error: {
-          code: "email-not-confirmed",
-          message:
-            "Conta criada. Verifica o teu email para confirmar o registo antes de iniciar sessão.",
-        },
-      };
-    }
-
     return { user: data.user, error: null };
   } catch (error) {
     return { user: null, error: translateError(error) };
@@ -93,16 +80,6 @@ export async function register({ name, email, password }) {
 export async function logout() {
   try {
     const { error } = await supabase.auth.signOut();
-    if (error) return { error: translateError(error) };
-    return { error: null };
-  } catch (error) {
-    return { error: translateError(error) };
-  }
-}
-
-export async function resetPassword(email) {
-  try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) return { error: translateError(error) };
     return { error: null };
   } catch (error) {

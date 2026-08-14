@@ -104,13 +104,6 @@ export default function LoginScreen() {
             />
           </View>
 
-          <Text
-            style={styles.forgotPassword}
-            onPress={() => router.push("/forgot-password")}
-          >
-            Esqueceu a palavra-passe?
-          </Text>
-
           <PrimaryButton
             text={loading ? "A iniciar sessão..." : "Iniciar Sessão"}
             onPress={handleLogin}
@@ -170,13 +163,6 @@ const styles = StyleSheet.create({
   inputs: {
     gap: 10,
     marginBottom: spacing.sm,
-  },
-  forgotPassword: {
-    color: colors.gold,
-    fontSize: 13,
-    fontFamily: "ManropeSemiBold",
-    textAlign: "right",
-    marginBottom: spacing.md,
   },
   errorBox: {
     backgroundColor: "rgba(255, 80, 80, 0.15)",
